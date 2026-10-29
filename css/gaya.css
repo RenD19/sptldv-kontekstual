@@ -106,6 +106,13 @@ ol.sum li{margin:.5em 0}
 .trow p{margin:.3em 0}
 .eqin{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:1.25rem;margin:10px 0}
 .eqin .num{width:84px}
+/* Latihan: pratinjau "Persamaanmu" di samping isian koefisien */
+.eqwrap{display:flex;flex-wrap:wrap;align-items:center;gap:4px 18px}
+.eqwrap>.eqin{margin:10px 0}
+.pratinjau{display:flex;flex-direction:column;gap:2px;min-width:150px;padding:6px 12px;border:1px dashed var(--line);border-radius:10px;background:#f8fbff}
+.pratinjau small{font-size:.78rem;font-weight:700;color:var(--mut)}
+.pratinjau .pr-isi{font-size:1.2rem;color:var(--ink);white-space:nowrap}
+.trow.ok .pratinjau{border-style:solid;border-color:#9be0b8;background:#fff}
 .relb.sel{background:var(--blue);color:#fff}
 .relb:disabled.sel{opacity:.9}
 input.num.vin{width:96px}
