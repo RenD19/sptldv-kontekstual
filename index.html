@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Program Linear: dari Contoh Kontekstual ke Nilai Optimum</title>
+<!-- KaTeX 0.16.45 (dipatok, SRI) untuk merender rumus. Bila gagal dimuat, teks lama tetap tampil. -->
+<link rel="stylesheet" id="katexCss" media="print" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.45/katex.min.css" integrity="sha384-UA8juhPf75SzzAMA/4fo3yOU7sBJ0om7SCD2GHq0fZqZco6tr1UCV7nUbk9J90JM" crossorigin="anonymous" referrerpolicy="no-referrer">
+<script defer id="katexJs" src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.45/katex.min.js" integrity="sha384-Tt7wBxLKwSzFVRET4O4U9H6v8MNaQ/CjN2FMP4xFm0ErrFu6aNqoonRVW5W40iGI" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<link rel="stylesheet" href="css/gaya.css?v=2026-10-30.1">
+</head>
+<body data-mode="belajar">
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Program Linear: dari Contoh Kontekstual ke Nilai Optimum</h1>
+      <p>Matematika · Kelas X · Fase E</p>
+    </div>
+    <div class="tabs" role="tablist">
+      <button class="tab on" id="tombol-belajar" role="tab" data-tab="belajar" aria-selected="true">Belajar</button>
+      <button class="tab" id="tombol-latihan" role="tab" data-tab="latihan" aria-selected="false">Latihan Mandiri</button>
+      <button class="tab" id="tombol-kuis" role="tab" data-tab="kuis" aria-selected="false">Kuis</button>
+    </div>
+  </header>
+
+  <main>
+  <!-- ===================== TAB BELAJAR ===================== -->
+  <section id="tab-belajar" class="tab-view" data-tab="belajar" role="tabpanel" aria-labelledby="tombol-belajar">
+    <div class="layout">
+      <div class="card panel"></div>
+      <div class="card plane">
+        <svg id="bidang-belajar" class="bidang" viewBox="0 0 460 460" role="img" aria-label="Bidang koordinat"></svg>
+        <p class="cap">Daerah hijau = daerah penyelesaian (DP).</p>
+      </div>
+    </div>
+  </section>
+  <!-- ===================== TAB LATIHAN MANDIRI ===================== -->
+  <section id="tab-latihan" class="tab-view" data-tab="latihan" role="tabpanel" aria-labelledby="tombol-latihan" hidden>
+    <div class="card kartu">
+      <div class="prob">
+        <div><small class="meta"></small><div class="ask"></div></div>
+        <div class="prob-actions">
+          <button class="btn ghost" data-aksi="ulangi">↺ Ulangi</button>
+          <button class="btn ghost" data-aksi="acak">🎲 Acak</button>
+        </div>
+      </div>
+    </div>
+    <div class="card progres"><ol class="prog"></ol><p class="steptext"></p></div>
+    <div class="layout">
+      <div class="card panel"></div>
+      <div class="card plane">
+        <svg id="bidang-latihan" class="bidang" viewBox="0 0 460 460" role="img" aria-label="Bidang koordinat"></svg>
+        <p class="cap">Daerah hijau = daerah penyelesaian (DP).</p>
+      </div>
+    </div>
+  </section>
+  <!-- ===================== TAB KUIS ===================== -->
+  <section id="tab-kuis" class="tab-view" data-tab="kuis" role="tabpanel" aria-labelledby="tombol-kuis" hidden>
+    <div class="card kartu">
+      <div class="prob">
+        <div><small class="meta"></small><div class="ask"></div></div>
+      </div>
+    </div>
+    <div class="card progres"><ol class="prog"></ol><p class="steptext"></p></div>
+    <div class="layout">
+      <div class="card panel"></div>
+      <div class="card plane">
+        <svg id="bidang-kuis" class="bidang" viewBox="0 0 460 460" role="img" aria-label="Bidang koordinat"></svg>
+        <p class="cap">Daerah hijau = daerah penyelesaian (DP).</p>
+      </div>
+    </div>
+  </section>
+  </main>
+</div>
+
+<!-- Maskot Plus -->
+<div id="plusWrap" data-mood="normal">
+  <div id="plusBubble" role="status" aria-live="polite"></div>
+  <div id="plusBody">
+    <svg viewBox="0 0 140 130" aria-hidden="true" focusable="false">
+      <ellipse cx="70" cy="122" rx="30" ry="4" fill="#1b2a41" opacity=".13"/>
+      <g id="plusChar">
+        <g id="armL"><line x1="30" y1="64" x2="15" y2="85" stroke="#1d4ed8" stroke-width="6" stroke-linecap="round"/><circle cx="15" cy="85" r="7.5" fill="#e0ecff" stroke="#1d4ed8" stroke-width="3"/></g>
+        <g id="armR"><line x1="110" y1="64" x2="125" y2="85" stroke="#1d4ed8" stroke-width="6" stroke-linecap="round"/><circle cx="125" cy="85" r="7.5" fill="#e0ecff" stroke="#1d4ed8" stroke-width="3"/></g>
+        <polygon points="49,34 91,34 91,51 108,51 108,93 91,93 91,110 49,110 49,93 32,93 32,51 49,51" fill="#1d4ed8" stroke="#1d4ed8" stroke-width="8" stroke-linejoin="round"/>
+        <circle cx="47" cy="82" r="4.5" fill="#f9a8d4" opacity=".75"/><circle cx="93" cy="82" r="4.5" fill="#f9a8d4" opacity=".75"/>
+        <g class="eye"><circle cx="59" cy="70" r="9" fill="#fff"/><circle cx="59" cy="71.5" r="4.8" fill="#1b2a41"/><circle cx="60.8" cy="69.5" r="1.5" fill="#fff"/></g>
+        <g class="eye"><circle cx="81" cy="70" r="9" fill="#fff"/><circle cx="81" cy="71.5" r="4.8" fill="#1b2a41"/><circle cx="82.8" cy="69.5" r="1.5" fill="#fff"/></g>
+        <path class="eyeH" d="M51 72Q59 61 67 72M73 72Q81 61 89 72" stroke="#fff" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+        <path class="brow" d="M50 58L68 53M72 53L90 58" stroke="#fff" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+        <path class="mN" d="M63 82Q70 90 77 82" stroke="#fff" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+        <path class="mH" d="M62 80Q70 97 78 80Z" fill="#fff" stroke="#fff" stroke-width="2" stroke-linejoin="round"/>
+        <path class="mS" d="M63 88Q70 80 77 88" stroke="#fff" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+      </g>
+    </svg>
+    <div id="plusConf"></div>
+  </div>
+</div>
+<button id="plusToggle" type="button" title="Sembunyikan Plus" aria-label="Sembunyikan Plus">✕</button>
+
+<!-- Urutan skrip penting: pengaturan → CORE → komponen → isi & tab → pengatur tab -->
+<script src="js/config.js?v=2026-10-30.1"></script>
+<script src="js/core.js?v=2026-10-30.1"></script>
+<script src="js/komponen.js?v=2026-10-30.1"></script>
+<script src="js/belajar-data.js?v=2026-10-30.1"></script>
+<script src="js/belajar.js?v=2026-10-30.1"></script>
+<script src="js/latihan.js?v=2026-10-30.1"></script>
+<script src="js/kuis.js?v=2026-10-30.1"></script>
+<script src="js/main.js?v=2026-10-30.1"></script>
+</body>
+</html>

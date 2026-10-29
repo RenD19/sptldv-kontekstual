@@ -1,0 +1,92 @@
+/* ==========================================================================
+   latihan.js · TAB LATIHAN MANDIRI
+   Wadah: <section id="tab-latihan">. Soal dibangkitkan acak oleh CORE,
+   dinilai langsung di halaman, tidak dikirim ke server.
+   Opsi khusus tab ini: petunjuk bertahap, "Di mana salahku?", percobaan tanpa batas,
+   tombol "Lihat jawaban" setelah dua kali salah.
+   ========================================================================== */
+(function(PL){
+'use strict';
+var U=PL.U,$=U.$,esc=U.esc;
+var sec,L,pick={t:'C',l:'C'},tahap='intro';
+
+function soalBaru(){
+  var t=pick.t==='C'?1+Math.floor(Math.random()*4):pick.t,l=pick.l==='C'?'LMH'[Math.floor(Math.random()*3)]:pick.l;
+  L.muat(CORE.gen(t,l,Math.random,true),0);L.S.selesai=false;tahap='intro';render();
+}
+function render(){
+  L.S.tahap=tahap==='kerja'?'kerja':'lain';
+  sec.dataset.tahap=tahap;
+  L.renderKartu();
+  if(tahap==='intro'){L.renderProgres(true);panelIntro();L.renderBidang('awal');}
+  else if(tahap==='selesai'){L.S.selesai=true;L.renderProgres();panelSelesai();L.renderBidang('akhir');}
+  else{L.renderProgres();L.panelLangkah();L.renderBidang();}
+  if(PL.kuis)PL.kuis.pendNotice(L.el.panel);
+}
+function panelIntro(){
+  var Q=L.S.Q,h='<h2>Pilih soal</h2><p class="muted">Pilih tipe dan level. Setiap tekan 🎲 menghasilkan soal baru.</p>';
+  h+='<div class="lvl"><b>Tipe soal</b><div class="chips">'+[['1','1 · Menggambar DP'],['2','2 · Sistem dari DP'],['3','3 · Kasus kontekstual'],['4','4 · Nilai maks/min'],['C','Campuran']].map(function(o){return '<button class="chip'+(String(pick.t)===o[0]?' on':'')+'" data-aksi="tipe" data-v="'+o[0]+'">'+o[1]+'</button>';}).join('')+'</div></div>';
+  h+='<div class="lvl"><b>Level</b><div class="chips">'+[['L','LOTS'],['M','MOTS'],['H','HOTS'],['C','Campuran']].map(function(o){return '<button class="chip'+(pick.l===o[0]?' on':'')+'" data-aksi="level" data-v="'+o[0]+'">'+o[1]+'</button>';}).join('')+'</div></div>';
+  h+='<div class="row"><button class="btn" data-aksi="acak">🎲 Soal acak</button></div>';
+  h+='<div class="note"><p>Soal di atas termasuk <b>'+esc(Q.jd)+' · '+esc(Q.lv)+'</b> dengan kata kerja <i>'+esc(Q.kko)+'</i>.</p><p>Di Latihan kamu boleh mencoba berulang kali, membuka 💡 Petunjuk, dan memakai 📍 Di mana salahku?</p></div>';
+  h+='<div class="row"><button class="btn primary" data-aksi="mulai">Mulai ➜</button></div>';
+  L.el.panel.innerHTML=h;
+}
+function panelSelesai(){
+  L.el.panel.innerHTML='<h2>🎉 Soal selesai</h2><h3>Pembahasan</h3><ol class="sum">'+L.S.Q.bahas.map(function(b){return '<li>'+b+'</li>';}).join('')+'</ol>'
+    +'<div class="row"><button class="btn primary" data-aksi="acak">Soal berikutnya ➜</button><button class="btn" data-aksi="ulangi">↺ Ulangi soal ini</button><button class="btn ghost" data-aksi="ke-kuis">Kuis ➜</button></div>';
+}
+function periksa(a,r){
+  var S=L.S;
+  if(r.ok){
+    S.solved=true;L.tandai(r);L.kunciSemua();
+    var hh=L.el.panel.querySelector('.hints');if(hh)hh.hidden=true;
+    L.fb('ok','Tepat! '+(S.s<2?'Lanjut ke langkah berikutnya.':'Soal ini selesai.'));
+    PL.Plus.say(S.s<2?'benar':'selesai');
+    L.tombol('<button class="btn primary" data-aksi="lanjut">'+(S.s<2?'Langkah berikutnya ➜':'Lihat pembahasan ➜')+'</button>');
+    L.renderBidang();L.renderProgres();
+  }else{
+    S.tries++;L.tandai(r);S.lw={a:a,r:r};
+    L.fb('bad','Belum tepat. '+(L.curS().k==='form'&&r.items.some(Boolean)?'Bagian yang hijau sudah benar. ':'')+'Baca petunjuk, lalu coba lagi.');
+    if(S.hints<2)L.tambahPetunjuk(false);
+    L.tombolDiMana();
+    if(S.tries>=2&&!L.el.panel.querySelector('[data-aksi="kunci"]'))L.tambahTombol('<button class="btn ghost" data-aksi="kunci">🔑 Lihat jawaban</button>');
+    PL.Plus.say('salah');
+  }
+}
+function lihatKunci(){
+  var S=L.S;L.isiKunci();S.solved=true;L.panelLangkah();L.kunciSemua();
+  L.fb('info','🔑 Jawaban yang benar adalah <b>'+L.teksKunci()+'</b>. Pelajari, lalu lanjutkan.');
+  L.tombol('<button class="btn primary" data-aksi="lanjut">'+(S.s<2?'Langkah berikutnya ➜':'Lihat pembahasan ➜')+'</button>');L.renderBidang();
+}
+function lanjut(){var S=L.S;if(S.s<2){S.s++;L.reset();render();}else{tahap='selesai';render();PL.Plus.say('selesai');}}
+function aksi(a,b){
+  if(a==='tipe'){pick.t=b.dataset.v==='C'?'C':+b.dataset.v;soalBaru();}
+  else if(a==='level'){pick.l=b.dataset.v;soalBaru();}
+  else if(a==='acak')soalBaru();
+  else if(a==='mulai'){tahap='kerja';L.S.s=0;L.reset();render();PL.Plus.say('sapa');}
+  else if(a==='lanjut')lanjut();
+  else if(a==='kunci')lihatKunci();
+  else if(a==='ulangi'){tahap='kerja';L.S.selesai=false;L.S.s=0;L.reset();render();}
+  else if(a==='ke-kuis')PL.pindahTab('kuis');
+}
+
+PL.TAB=PL.TAB||{};
+PL.TAB.latihan={
+  init:function(){
+    sec=$('#tab-latihan');
+    L=PL.Langkah(sec,{petunjuk:true,diManaSalah:true,periksa:periksa,aksi:aksi,
+      meta:function(){var Q=L.S.Q;return esc(Q.jd+' · '+Q.lv+(Q.ls?' · khusus Latihan':''));}});
+    this.bidang=L.bidang;this.panduan=L.panduan;this.L=L;
+    /* tombol di kartu soal (di luar panel) */
+    sec.querySelector('.kartu').addEventListener('click',function(e){
+      var b=e.target.closest('[data-aksi]');if(!b)return;
+      if(b.dataset.aksi==='ulangi'&&tahap!=='intro')aksi('ulangi');
+      else if(b.dataset.aksi==='acak')soalBaru();
+    });
+    soalBaru();
+  },
+  tampil:function(){render();},
+  sembunyi:function(){return true;}
+};
+})(window.PL);
