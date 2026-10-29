@@ -10,6 +10,30 @@
 var U=PL.U,$=U.$,esc=U.esc;
 var sec,L,pick={t:'C',l:'C'},tahap='intro';
 
+/* ---------- Nama rumus yang lebih eksplisit pada petunjuk ----------
+   Teks petunjuk asli ada di CORE (core.js dan server/Code.gs). Mengubahnya di sana
+   akan mengubah kode "cek", sehingga Apps Script harus diterbitkan ulang.
+   Karena itu nama rumus diganti di sini, hanya saat petunjuk ditampilkan di tab Latihan.
+   Setiap baris berisi [pola yang dicari, teks pengganti]. */
+var RUMUS_2T='(y − y₁)/(y₂ − y₁) = (x − x₁)/(x₂ − x₁)';
+var NAMA_RUMUS=[
+  [/^Rumus dua titik adalah/,'Rumus persamaan garis melalui dua titik adalah'],
+  [/^Pakai rumus dua titik\.$/,'Pakai rumus persamaan garis melalui dua titik, yaitu '+RUMUS_2T+'.'],
+  [/^Dengan titik \(/,'Cara lain, pakai rumus persamaan garis yang memotong sumbu X di (a, 0) dan sumbu Y di (0, b), yaitu bx + ay = ab. Dengan titik ('],
+  [/^Buat tabel x \| y untuk setiap garis: isi/,'Cari titik potong setiap garis dengan sumbu koordinat memakai tabel x | y. Isi'],
+  [/^Titik itu adalah titik potong kedua garis\.$/,'Titik itu adalah titik potong kedua garis. Hitung dengan metode eliminasi dan substitusi pada sistem persamaan linear dua variabel (SPLDV).'],
+  [/atau titik potong dua garis\.$/,'atau titik potong dua garis. Titik potong dua garis dihitung dengan metode eliminasi dan substitusi (SPLDV).'],
+  [/^Substitusikan x dan y setiap titik ke f/,'Pakai metode uji titik pojok. Substitusikan x dan y setiap titik ke f'],
+  [/^Hitung f di setiap titik sudut/,'Pakai metode uji titik pojok. Hitung f di setiap titik sudut'],
+  [/^Garis bergeser ke kanan-atas/,'Pada metode garis selidik, garis digeser sejajar dengan mengubah k. Garis bergeser ke kanan-atas'],
+  [/^Titik uji (\(.+?\)) tidak terletak/,'Ini metode uji titik untuk menentukan daerah penyelesaian. Titik uji $1 tidak terletak'],
+  [/^Uji satu titik di dalam DP ke setiap pertidaksamaan/,'Pakai metode uji titik daerah penyelesaian. Uji satu titik di dalam DP ke setiap pertidaksamaan']
+];
+function namaRumus(h){
+  for(var i=0;i<NAMA_RUMUS.length;i++)if(NAMA_RUMUS[i][0].test(h)){h=h.replace(NAMA_RUMUS[i][0],NAMA_RUMUS[i][1]);break;}
+  return h.replace(/\+ −/g,'− ');   /* "4x + −2y" ditulis "4x − 2y" */
+}
+
 function soalBaru(){
   var t=pick.t==='C'?1+Math.floor(Math.random()*4):pick.t,l=pick.l==='C'?'LMH'[Math.floor(Math.random()*3)]:pick.l;
   L.muat(CORE.gen(t,l,Math.random,true),0);L.S.selesai=false;tahap='intro';render();
@@ -75,7 +99,7 @@ PL.TAB=PL.TAB||{};
 PL.TAB.latihan={
   init:function(){
     sec=$('#tab-latihan');
-    L=PL.Langkah(sec,{petunjuk:true,diManaSalah:true,periksa:periksa,aksi:aksi,
+    L=PL.Langkah(sec,{petunjuk:true,diManaSalah:true,pratinjau:true,ubahPetunjuk:namaRumus,periksa:periksa,aksi:aksi,
       meta:function(){var Q=L.S.Q;return esc(Q.jd+' · '+Q.lv+(Q.ls?' · khusus Latihan':''));}});
     this.bidang=L.bidang;this.panduan=L.panduan;this.L=L;
     /* tombol di kartu soal (di luar panel) */
