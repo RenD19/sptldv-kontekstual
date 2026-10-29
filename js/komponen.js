@@ -332,7 +332,10 @@ PL.Plus={panduan:null,bidang:null,say:mascotSay,ucap:plusSay,go:plusGo,home:plus
 PL.Math={render:renderMath};
 
 /* ---------- PL.Langkah: penampil langkah soal ----------
-   var L=PL.Langkah(sectionEl,{petunjuk:bool, diManaSalah:bool, periksa:fn(a,r), aksi:fn(nama,tombol), meta:fn()})
+   var L=PL.Langkah(sectionEl,{petunjuk:bool, diManaSalah:bool, periksa:fn(a,r), aksi:fn(nama,tombol), meta:fn(),
+                               pratinjau:bool, ubahPetunjuk:fn(teks)})
+   pratinjau    : tampilkan "Persamaanmu" (rumus KaTeX) di samping isian a, b, c
+   ubahPetunjuk : mengubah teks petunjuk sebelum ditampilkan (CORE tidak ikut berubah)
    Wadah di dalam section: .meta .ask (kartu soal), .prog .steptext (progres), .panel, svg.bidang, .cap
    Semua tombol memakai data-aksi; satu pendengar klik per panel (event delegation). */
 PL.Langkah=function(sec,opsi){
@@ -393,7 +396,9 @@ PL.Langkah=function(sec,opsi){
     }
     var inp=function(j,ph){return '<input class="num" data-i="'+i+'" data-j="'+j+'" inputmode="numeric" autocomplete="off" value="'+esc(a[j])+'" placeholder="'+ph+'"'+dis+' aria-label="'+ph+'">';};
     var mid=it.t==='ineq'?CORE.OPS.map(function(o){return '<button class="btn relb opb'+(a[3]===o?' sel':'')+'" data-i="'+i+'" data-op="'+esc(o)+'"'+dis+'>'+esc(o)+'</button>';}).join(' '):'<b>=</b>';
-    return '<div class="trow'+(lk?' ok':'')+'" data-i="'+i+'"><p>'+it.lab+'</p><div class="eqin">'+inp(0,'a')+'<i>x</i> + '+inp(1,'b')+'<i>y</i> '+mid+' '+inp(2,'c')+'</div></div>';
+    var baris='<div class="eqin">'+inp(0,'a')+'<i>x</i> + '+inp(1,'b')+'<i>y</i> '+mid+' '+inp(2,'c')+'</div>';
+    if(opsi.pratinjau)baris='<div class="eqwrap">'+baris+'<div class="pratinjau" data-pr="'+i+'"><small>'+(it.t==='ineq'?'Pertidaksamaanmu':'Persamaanmu')+'</small><span class="pr-isi"></span></div></div>';
+    return '<div class="trow'+(lk?' ok':'')+'" data-i="'+i+'"><p>'+it.lab+'</p>'+baris+'</div>';
   }
   /* tabel x | y (item 0 = y saat x = 0, item 1 = x saat y = 0) */
   function xyTable(){
@@ -404,6 +409,39 @@ PL.Langkah=function(sec,opsi){
   }
   function gsMax(Q){var m=0;Q.st.forEach(function(St){(St.v.mk||[]).forEach(function(p){var g=St.v.gs;if(g)m=Math.max(m,g.p*p.x+g.q*p.y);});});return Math.ceil(m*1.25)+1;}
   function selText(){return S.sel.length?'Titik yang dipilih <b>'+S.sel.map(ptS).join(', ')+'</b>':'<span class="muted">Belum ada titik yang dipilih.</span>';}
+  /* ---- pratinjau "Persamaanmu": isian a, b, c ditampilkan sebagai rumus (aktif bila opsi.pratinjau) ---- */
+  var REL_TEX={'=':'=','<':'<','≤':'\\le','>':'>','≥':'\\ge'};
+  function bentukPratinjau(a,rel){
+    var bag=[0,1,2].map(function(j){var s=String(a[j]==null?'':a[j]).trim();if(s==='')return {k:'kosong'};var v=parseNum(s,false);return isNaN(v)?{k:'salah'}:{k:'ok',v:v};});
+    var angT=function(v){return String(Math.abs(v)).replace('.','{,}');},angP=function(v){return String(Math.abs(v)).replace('.',',');};
+    var KOSONG_T='\\square',SALAH_T='{\\color{#b91c1c}?}';
+    var tex='',teks='',ada=false;
+    function suku(p,vr){
+      if(p.k==='ok'&&p.v===0)return;                      /* koefisien 0 → suku tidak ditulis */
+      var neg=p.k==='ok'&&p.v<0,satu=p.k==='ok'&&Math.abs(p.v)===1;
+      var kT=p.k==='kosong'?KOSONG_T+' ':p.k==='salah'?SALAH_T:satu?'':angT(p.v);
+      var kP=p.k==='kosong'?'□':p.k==='salah'?'?':satu?'':angP(p.v);
+      if(!ada){tex+=(neg?'-':'')+kT+vr;teks+=(neg?'−':'')+kP+vr;}
+      else{tex+=(neg?' - ':' + ')+kT+vr;teks+=(neg?' − ':' + ')+kP+vr;}
+      ada=true;
+    }
+    suku(bag[0],'x');suku(bag[1],'y');
+    if(!ada){tex='0';teks='0';}
+    var c=bag[2];
+    var cT=c.k==='kosong'?KOSONG_T:c.k==='salah'?SALAH_T:(c.v<0?'-':'')+angT(c.v);
+    var cP=c.k==='kosong'?'□':c.k==='salah'?'?':(c.v<0?'−':'')+angP(c.v);
+    return {tex:tex+' '+(rel?REL_TEX[rel]:KOSONG_T)+' '+cT,teks:teks+' '+(rel||'□')+' '+cP};
+  }
+  function pratinjau(i){
+    if(!opsi.pratinjau)return;
+    var St=curS(),it=St&&St.it&&St.it[i],box=pq('.pratinjau[data-pr="'+i+'"] .pr-isi');
+    if(!box||!it||(it.t!=='eq'&&it.t!=='ineq'))return;
+    var a=S.ans[i],b=bentukPratinjau(a,it.t==='ineq'?a[3]:'=');
+    box.textContent=b.teks;                                /* teks biasa bila KaTeX belum siap */
+    box.setAttribute('data-tex',b.tex);
+    PL.Math.render(box);
+  }
+  function pratinjauSemua(){var St=curS();if(!opsi.pratinjau||!St||St.k!=='form')return;St.it.forEach(function(it,i){pratinjau(i);});}
   function panelLangkah(){
     var Q=S.Q,St=curS(),h='';
     h+='<h2>Langkah '+(S.s+1)+' · '+esc(St.nm)+'</h2><p>'+St.q+'</p>';
@@ -418,6 +456,7 @@ PL.Langkah=function(sec,opsi){
     h+='<ul class="hints" hidden></ul><div class="fb" hidden></div><div class="actions row">'+(opsi.petunjuk?'<button class="btn ghost" data-aksi="petunjuk">💡 Petunjuk</button>':'')+'<button class="btn primary" data-aksi="periksa">Periksa</button></div>';
     el.panel.innerHTML=h;
     renderHints();
+    pratinjauSemua();
   }
 
   /* ---- satu pendengar untuk seluruh panel ---- */
@@ -433,6 +472,7 @@ PL.Langkah=function(sec,opsi){
       var k=+b.dataset.i;if(S.lock[k]||S.solved)return;S.ans[k][3]=b.dataset.op;
       var r2=b.closest('.trow');r2.classList.remove('bad');
       r2.querySelectorAll('[data-op]').forEach(function(x){x.classList.toggle('sel',x.dataset.op===S.ans[k][3]);});
+      pratinjau(k);
       return;
     }
     var a=b.dataset.aksi;if(!a)return;
@@ -446,7 +486,7 @@ PL.Langkah=function(sec,opsi){
     if(inp.classList.contains('gsr')){S.gsK=+inp.value;var gv=pq('.gsV');if(gv)gv.textContent=nm(S.gsK);renderBidang();return;}
     if(!inp.classList.contains('num')||inp.dataset.i===undefined)return;
     var i=+inp.dataset.i;
-    if(inp.dataset.j!==undefined)S.ans[i][+inp.dataset.j]=inp.value;else S.ans[i]=inp.value;
+    if(inp.dataset.j!==undefined){S.ans[i][+inp.dataset.j]=inp.value;pratinjau(i);}else S.ans[i]=inp.value;
     var r=inp.closest('.trow,tr');if(r)r.classList.remove('bad');inp.classList.remove('bad');
     var z=function(k){var v=S.ans[k];return v===''||v==null?'…':String(v);},p0=pq('.xyP0'),p1=pq('.xyP1');
     if(p0)p0.textContent='(0, '+z(0)+')';if(p1)p1.textContent='('+z(1)+', 0)';
@@ -471,7 +511,7 @@ PL.Langkah=function(sec,opsi){
   function tambahPetunjuk(sapa){var l=curS().h;if(!l.length)return;S.hints=Math.min(l.length,S.hints+1);renderHints();if(sapa)PL.Plus.say('petunjuk');}
   function renderHints(){
     var box=pq('.hints');if(!box)return;var l=curS()?curS().h:[];
-    box.innerHTML=l.slice(0,S.hints).map(function(h){return '<li>'+h+'</li>';}).join('');
+    box.innerHTML=l.slice(0,S.hints).map(function(h){return '<li>'+(opsi.ubahPetunjuk?opsi.ubahPetunjuk(h):h)+'</li>';}).join('');
     box.hidden=!S.hints||!opsi.petunjuk;
   }
   function tandai(r){
