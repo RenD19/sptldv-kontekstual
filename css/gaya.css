@@ -377,3 +377,18 @@ body[data-mode="latihan"] .hints{font-size:1rem}
 body[data-mode="kuis"] #plusWrap{display:none}
 */
 }
+
+/* ---------- Pembahasan saat "🔑 Lihat jawaban" (tab Latihan) ----------
+   Tempel di bagian paling bawah css/gaya.css. */
+.fb.kunci .kb-judul{font-weight:700;margin:.75rem 0 .3rem}
+.fb.kunci .kb-judul:first-child{margin-top:0}
+.fb.kunci .kb-gulir{overflow-x:auto;max-width:100%}
+.fb.kunci .kb-tbl{border-collapse:collapse;margin:.2rem 0 .4rem}
+.fb.kunci .kb-tbl th,.fb.kunci .kb-tbl td{text-align:left;vertical-align:top;padding:.3rem .55rem}
+.fb.kunci .kb-xy{border-collapse:collapse;margin:.2rem 0 .4rem}
+.fb.kunci .kb-xy th,.fb.kunci .kb-xy td{text-align:center;padding:.3rem .7rem}
+.fb.kunci .kb-benar{color:#15803d;font-weight:700}
+.fb.kunci .kb-salah{color:#b91c1c;text-decoration:line-through;text-decoration-thickness:2px}
+.fb.kunci ul,.fb.kunci ol{margin:.2rem 0 .4rem 1.25rem;padding:0}
+.fb.kunci li{margin:.25rem 0;line-height:1.5}
+.fb.kunci .kb-tutup{margin:.6rem 0 0;font-style:italic}
