@@ -95,7 +95,75 @@ function lanjutTitikSudut(Q){
   return h;
 }
 
+/* ---------- kata kunci kalimat → arti tanda ----------
+   [kata kunci, arah ('k' batas atas, 'b' batas bawah, '=' tepat), boleh sama dengan?]
+   Urutan penting: frasa panjang ("tidak lebih dari") diletakkan sebelum frasa pendek ("lebih dari"). */
+var KATA=[
+  ['tidak boleh melebihi','k',1],['tidak lebih dari','k',1],['tidak kurang dari','b',1],['sekurang-kurangnya','b',1],
+  ['paling banyak','k',1],['paling sedikit','b',1],['maksimal','k',1],['minimal','b',1],
+  ['kurang dari','k',0],['lebih dari','b',0],['menghabiskan seluruh','=',1],['tepat','=',1]
+];
+var RE_KATA=new RegExp(KATA.map(function(k){return k[0].replace(/-/g,'\\-');}).join('|'),'i');
+function kataKunci(teks){
+  var m=RE_KATA.exec(String(teks||''));if(!m)return null;
+  var w=m[0].toLowerCase();
+  for(var i=0;i<KATA.length;i++)if(KATA[i][0]===w)return {kata:KATA[i][0],arah:KATA[i][1],sama:!!KATA[i][2]};
+  return null;
+}
+function artiKata(e){
+  if(e.arah==='=')return 'nilainya harus tepat sama dengan batas, tidak lebih dan tidak kurang';
+  if(e.arah==='k')return e.sama?'nilainya tidak boleh melebihi batas, tetapi boleh tepat sama dengan batas':'nilainya harus lebih kecil daripada batas dan tidak boleh tepat sama';
+  return e.sama?'nilainya tidak boleh di bawah batas, tetapi boleh tepat sama dengan batas':'nilainya harus lebih besar daripada batas dan tidak boleh tepat sama';
+}
+var TIP_TANDA='Tanda bergaris bawah (≤ dan ≥) berarti boleh sama dengan, tanda tanpa garis bawah (&lt; dan &gt;) berarti tidak boleh sama, dan = berarti harus tepat sama. Ujung lancip tanda menunjuk ke ruas yang lebih kecil.';
+/* tiga petunjuk bertahap untuk menerjemahkan satu kalimat menjadi tanda */
+function petunjukKata(kal){
+  var e=kataKunci(kal);if(!e)return [];
+  return ['Kata kuncinya adalah “'+e.kata+'”.',
+    '“'+e.kata+'” berarti '+artiKata(e)+'.',
+    TIP_TANDA+' Bayangkan kalimatnya ditulis sebagai “nilai … batas”, lalu pilih tanda yang cocok.'];
+}
+/* kalimat cerita yang memuat kata kunci kendala, urut sesuai kendala (1), (2).
+   Kalimat sebelumnya ikut diambil bila berisi angka per benda (tanpa kata kunci). */
+function kalimatKendala(Q){
+  var teks=String(Q.soal||'').split('<i>')[0].replace(/<[^>]+>/g,'').trim();
+  var ks=teks.split(/\.\s+/).map(function(k){return k.replace(/\.$/,'').trim();}).filter(Boolean),out=[];
+  ks.forEach(function(k,i){
+    if(!kataKunci(k))return;
+    var sb=i>0?ks[i-1]:'',info=sb&&!kataKunci(sb)&&/\d/.test(sb)?sb+'. ':'';
+    out.push({kal:k+'.',lengkap:info+k+'.'});
+  });
+  return out;
+}
+function namaVariabel(teks){
+  return {X:ambil(/x = banyak (.+?) \(/,teks,'benda jenis x'),Y:ambil(/y = banyak (.+?) \(/,teks,'benda jenis y')};
+}
+
 var LANJUT={
+  /* Tipe 3 LOTS a · kata kunci → tanda, lalu memilih variabel */
+  '3La':function(Q){
+    var St=Q.st,it2=St[2].it[0],V=namaVariabel(it2.o[it2.key]);
+    return [
+      petunjukKata(St[0].it[0].lab),
+      petunjukKata(St[1].it[0].lab),
+      ['Variabel menyatakan sesuatu yang banyaknya belum diketahui dan dapat diatur. Harga, kebutuhan per benda, dan batas sudah diketahui dari soal, jadi bukan variabel.',
+       'Pada cerita ini yang diatur adalah banyak '+V.X+' dan banyak '+V.Y+'. Pilih variabel yang menyatakan banyak kedua benda itu beserta satuannya.']
+    ];
+  },
+  /* Tipe 3 MOTS a · memodelkan dua kendala; langkah titik sudut memakai lanjutTitikSudut() */
+  '3Ma':function(Q){
+    var V=namaVariabel(Q.soal),kk=kalimatKendala(Q);
+    function satu(i){
+      var it=Q.st[i].it[0],k=it.key,nama=ambil(/Kendala (.+)$/,it.lab,'('+(i+1)+')'),K=kk[i],h=[];
+      h.push((K?'Kalimat tentang '+nama+' adalah “'+K.lengkap+'” ':'')
+        +'Susun ruas kiri dengan bentuk (angka untuk satu '+V.X+') × x + (angka untuk satu '+V.Y+') × y. Ruas kanan adalah batas pada kalimat itu.');
+      var e=K&&kataKunci(K.kal);
+      if(e)h.push('Kata kuncinya “'+e.kata+'”, artinya '+artiKata(e)+'. '+TIP_TANDA);
+      h.push('Jika semua angka dibagi faktor persekutuannya, ruas kiri menjadi '+lin(k.a,k.b)+' dan ruas kanan menjadi '+nm(k.c)+'. Tinggal pilih tandanya. Bentuk kelipatannya juga diterima.');
+      return h;
+    }
+    return [satu(0),satu(1)];
+  },
   /* Tipe 3 HOTS a · rencana penjualan tiket/kaos dievaluasi */
   '3Ha':function(Q){
     var St=Q.st,R=tandaTitik(St[0],'rencana'),k1=Q.sys[0],k2=Q.sys[1];
