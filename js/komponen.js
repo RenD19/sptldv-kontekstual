@@ -657,7 +657,7 @@ tb.textContent=habis?'💡 Semua petunjuk sudah dibuka'
   return {S:S,el:el,bidang:bidang,curS:curS,muat:muat,reset:reset,collect:collect,
     panelLangkah:panelLangkah,renderKartu:renderKartu,renderProgres:renderProgres,renderBidang:renderBidang,kosong:kosong,
     fb:fb,tandai:tandai,kunciSemua:kunciSemua,isiKunci:isiKunci,teksKunci:teksKunci,tombol:tombol,tambahTombol:tambahTombol,
-    tambahPetunjuk:tambahPetunjuk,tombolDiMana:tombolDiMana,periksa:periksa,
+    tambahPetunjuk:tambahPetunjuk,renderHints:renderHints,tombolDiMana:tombolDiMana,periksa:periksa,
     panduan:function(){var St=curS();if(!St)return null;return St.k==='pt'?'Titiknya harus di sisi yang benar, ya':St.k==='pts'?'Periksa lagi pojok-pojok DP, ya':'Periksa isian yang berwarna merah, ya';}};
 };
 })(window.PL=window.PL||{});
