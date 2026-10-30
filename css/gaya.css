@@ -392,3 +392,8 @@ body[data-mode="kuis"] #plusWrap{display:none}
 .fb.kunci ul,.fb.kunci ol{margin:.2rem 0 .4rem 1.25rem;padding:0}
 .fb.kunci li{margin:.25rem 0;line-height:1.5}
 .fb.kunci .kb-tutup{margin:.6rem 0 0;font-style:italic}
+/* ---------- memperbaiki tampilan tabel ----------
+   Tempel di bagian paling bawah css/gaya.css. */
+.hints li.rinci{border-left:3px solid #f59e0b;padding-left:.5em}
+.hints .xy-hint{margin:.35em 0}
+.hints .xy-mini{display:inline-table;margin:.25em 0 0 .5em;font-size:.9em}
