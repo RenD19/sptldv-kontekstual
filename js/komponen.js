@@ -508,26 +508,47 @@ PL.Langkah=function(sec,opsi){
 
   /* ---- umpan balik ---- */
   function fb(kind,html){var e=pq('.fb');if(!e)return;e.hidden=false;e.className='fb '+kind;e.innerHTML=html;}
-  /* daftar petunjuk = petunjuk CORE + petunjuk lanjutan dari tab (opsi.petunjukLanjut) */
-  function daftarPetunjuk(){
-   var St=curS();if(!St)return [];
-   var x=[];
-   if(opsi.petunjukLanjut){try{x=opsi.petunjukLanjut(S.Q,S.s,St)||[];}catch(err){if(window.console)console.warn('petunjukLanjut',err);x=[];}}
-   return St.h.concat(x);
-  }
-  function tambahPetunjuk(sapa){var l=daftarPetunjuk();if(!l.length||S.hints>=l.length)return;S.hints++;renderHints();if(sapa)PL.Plus.say('petunjuk');}
-  function renderHints(){
-   var box=pq('.hints');if(!box)return;
-   var St=curS(),l=daftarPetunjuk(),n0=St?St.h.length:0;
-   box.innerHTML=l.slice(0,S.hints).map(function(h,i){return '<li'+(i>=n0?' class="rinci"':'')+'>'+(opsi.ubahPetunjuk?opsi.ubahPetunjuk(h):h)+'</li>';}).join('');
-   box.hidden=!S.hints||!opsi.petunjuk;
-   var tb=pq('[data-aksi="petunjuk"]');
-   if(tb){
-    var habis=S.hints>=l.length;
-    tb.hidden=!l.length;tb.disabled=habis;
-    tb.textContent=!S.hints?'💡 Petunjuk':habis?'💡 Semua petunjuk sudah dibuka':'💡 Petunjuk lebih rinci ('+(S.hints+1)+' dari '+l.length+')';
-   }
-  }
+ /* ==========================================================================
+   PENGGANTI DI komponen.js (di dalam PL.Langkah, bagian "umpan balik")
+   Hapus fungsi lama: tambahPetunjuk, renderHints (dan daftarPetunjuk bila sudah ada),
+   lalu tempel seluruh blok di bawah ini di tempat yang sama.
+   ========================================================================== */
+/* ---- petunjuk bertahap ----
+   opsi.petunjukLanjut(Q,s,St) : petunjuk tambahan yang tampil setelah petunjuk CORE
+   opsi.gerbangPetunjuk = n     : petunjuk ke-(n+1) dan seterusnya baru terbuka setelah
+                                  siswa mencoba menjawab minimal sekali pada langkah itu
+   Petunjuk lama diringkas menjadi satu baris yang bisa diketuk; hanya yang terbaru tampil penuh. */
+function daftarPetunjuk(){
+var St=curS();if(!St)return [];
+var x=[];
+if(opsi.petunjukLanjut){try{x=opsi.petunjukLanjut(S.Q,S.s,St)||[];}catch(err){if(window.console)console.warn('petunjukLanjut',err);x=[];}}
+return St.h.concat(x);
+}
+function gerbangTertutup(){var g=opsi.gerbangPetunjuk;return g!=null&&S.hints>=g&&S.tries<1;}
+function tambahPetunjuk(sapa){var l=daftarPetunjuk();if(!l.length||S.hints>=l.length||gerbangTertutup())return;S.hints++;renderHints();if(sapa)PL.Plus.say('petunjuk');}
+function ringkas(h){
+var t=String(h).replace(/<table[\s\S]*?<\/table>/g,' ').replace(/<[^>]+>/g,'').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&').replace(/\s+/g,' ').trim();
+return esc(t.length>70?t.slice(0,67)+'…':t);
+}
+function renderHints(){
+var box=pq('.hints');if(!box)return;
+var St=curS(),l=daftarPetunjuk(),n0=St?St.h.length:0,akhir=S.hints-1;
+box.innerHTML=l.slice(0,S.hints).map(function(h,i){
+var isi=opsi.ubahPetunjuk?opsi.ubahPetunjuk(h):h,kls=i>=n0?' rinci':'';
+if(i<akhir)return '<li class="lama'+kls+'"><details><summary><b>Petunjuk '+(i+1)+'</b> '+ringkas(isi)+'</summary><div class="isi">'+isi+'</div></details></li>';
+return '<li class="baru'+kls+'">'+isi+'</li>';
+}).join('');
+box.hidden=!S.hints||!opsi.petunjuk;
+var tb=pq('[data-aksi="petunjuk"]');
+if(tb){
+var habis=S.hints>=l.length,tutup=!habis&&gerbangTertutup();
+tb.hidden=!l.length;tb.disabled=habis||tutup;
+tb.textContent=habis?'💡 Semua petunjuk sudah dibuka'
+:tutup?'💡 Coba jawab dulu untuk membuka petunjuk berikutnya'
+:!S.hints?'💡 Petunjuk':'💡 Petunjuk lebih rinci ('+(S.hints+1)+' dari '+l.length+')';
+}
+}
+   
   function tandai(r){
     var St=curS();if(St.k!=='form')return;
     r.items.forEach(function(ok,i){
