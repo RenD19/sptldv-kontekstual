@@ -508,11 +508,25 @@ PL.Langkah=function(sec,opsi){
 
   /* ---- umpan balik ---- */
   function fb(kind,html){var e=pq('.fb');if(!e)return;e.hidden=false;e.className='fb '+kind;e.innerHTML=html;}
-  function tambahPetunjuk(sapa){var l=curS().h;if(!l.length)return;S.hints=Math.min(l.length,S.hints+1);renderHints();if(sapa)PL.Plus.say('petunjuk');}
+  /* daftar petunjuk = petunjuk CORE + petunjuk lanjutan dari tab (opsi.petunjukLanjut) */
+  function daftarPetunjuk(){
+   var St=curS();if(!St)return [];
+   var x=[];
+   if(opsi.petunjukLanjut){try{x=opsi.petunjukLanjut(S.Q,S.s,St)||[];}catch(err){if(window.console)console.warn('petunjukLanjut',err);x=[];}}
+   return St.h.concat(x);
+  }
+  function tambahPetunjuk(sapa){var l=daftarPetunjuk();if(!l.length||S.hints>=l.length)return;S.hints++;renderHints();if(sapa)PL.Plus.say('petunjuk');}
   function renderHints(){
-    var box=pq('.hints');if(!box)return;var l=curS()?curS().h:[];
-    box.innerHTML=l.slice(0,S.hints).map(function(h){return '<li>'+(opsi.ubahPetunjuk?opsi.ubahPetunjuk(h):h)+'</li>';}).join('');
-    box.hidden=!S.hints||!opsi.petunjuk;
+   var box=pq('.hints');if(!box)return;
+   var St=curS(),l=daftarPetunjuk(),n0=St?St.h.length:0;
+   box.innerHTML=l.slice(0,S.hints).map(function(h,i){return '<li'+(i>=n0?' class="rinci"':'')+'>'+(opsi.ubahPetunjuk?opsi.ubahPetunjuk(h):h)+'</li>';}).join('');
+   box.hidden=!S.hints||!opsi.petunjuk;
+   var tb=pq('[data-aksi="petunjuk"]');
+   if(tb){
+    var habis=S.hints>=l.length;
+    tb.hidden=!l.length;tb.disabled=habis;
+    tb.textContent=!S.hints?'💡 Petunjuk':habis?'💡 Semua petunjuk sudah dibuka':'💡 Petunjuk lebih rinci ('+(S.hints+1)+' dari '+l.length+')';
+   }
   }
   function tandai(r){
     var St=curS();if(St.k!=='form')return;
