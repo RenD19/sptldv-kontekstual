@@ -402,3 +402,6 @@ body[data-mode="kuis"] #plusWrap{display:none}
 .hints .xy-mini{display:inline-table;margin:.25em 0 0 .5em;font-size:.9em}
 .hints li.lama summary{cursor:pointer;color:#475569;font-size:.92em;list-style-position:inside}
 .hints li.lama .isi{margin:.3em 0 .2em 1.2em}
+
+/* chip yang tidak tersedia (mis. LOTS untuk Tipe 2 di Latihan) */
+.chip:disabled{opacity:.4;cursor:not-allowed}

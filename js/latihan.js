@@ -40,10 +40,15 @@ function namaRumus(h){
 var GERBANG_PETUNJUK=2;
 function petunjukLanjut(Q,s,St){return PL.Petunjuk?PL.Petunjuk.lanjut(Q,s,St):[];}
 
+/* Tipe dan level yang dipakai di Latihan.
+   Tipe 1 (Menggambar DP) dan Tipe 2 LOTS tidak dipakai. */
 var TIPE_LATIHAN=[2,3,4];
+var LEVEL_TIPE={2:'MH',3:'LMH',4:'LMH'};
+function acakDari(a){return a[Math.floor(Math.random()*a.length)];}
 function soalBaru(){
-  /* Tipe 1 (Menggambar DP) tidak dipakai di Latihan; Campuran memilih acak dari tipe 2–4 */
-  var t=pick.t==='C'?TIPE_LATIHAN[Math.floor(Math.random()*TIPE_LATIHAN.length)]:pick.t,l=pick.l==='C'?'LMH'[Math.floor(Math.random()*3)]:pick.l;
+  var calon=(pick.t==='C'?TIPE_LATIHAN:[pick.t]).filter(function(t){return pick.l==='C'||LEVEL_TIPE[t].indexOf(pick.l)>=0;});
+  if(!calon.length){pick.l='C';calon=pick.t==='C'?TIPE_LATIHAN:[pick.t];}
+  var t=acakDari(calon),l=pick.l==='C'?acakDari(LEVEL_TIPE[t].split('')):pick.l;
   L.muat(CORE.gen(t,l,Math.random,true),0);L.S.selesai=false;tahap='intro';render();
 }
 function render(){
@@ -58,7 +63,7 @@ function render(){
 function panelIntro(){
   var Q=L.S.Q,h='<h2>Pilih soal</h2><p class="muted">Pilih tipe dan level. Setiap tekan 🎲 menghasilkan soal baru.</p>';
   h+='<div class="lvl"><b>Tipe soal</b><div class="chips">'+[['2','2 · Sistem dari DP'],['3','3 · Kasus kontekstual'],['4','4 · Nilai maks/min'],['C','Campuran']].map(function(o){return '<button class="chip'+(String(pick.t)===o[0]?' on':'')+'" data-aksi="tipe" data-v="'+o[0]+'">'+o[1]+'</button>';}).join('')+'</div></div>';
-  h+='<div class="lvl"><b>Level</b><div class="chips">'+[['L','LOTS'],['M','MOTS'],['H','HOTS'],['C','Campuran']].map(function(o){return '<button class="chip'+(pick.l===o[0]?' on':'')+'" data-aksi="level" data-v="'+o[0]+'">'+o[1]+'</button>';}).join('')+'</div></div>';
+  h+='<div class="lvl"><b>Level</b><div class="chips">'+[['L','LOTS'],['M','MOTS'],['H','HOTS'],['C','Campuran']].map(function(o){var mati=o[0]!=='C'&&pick.t!=='C'&&LEVEL_TIPE[pick.t].indexOf(o[0])<0;return '<button class="chip'+(pick.l===o[0]?' on':'')+'" data-aksi="level" data-v="'+o[0]+'"'+(mati?' disabled title="Level ini tidak tersedia untuk tipe yang dipilih"':'')+'>'+o[1]+'</button>';}).join('')+'</div></div>';
   h+='<div class="row"><button class="btn" data-aksi="acak">🎲 Soal acak</button></div>';
   h+='<div class="note"><p>Soal di atas termasuk <b>'+esc(Q.jd)+' · '+esc(Q.lv)+'</b> dengan kata kerja <i>'+esc(Q.kko)+'</i>.</p><p>Di Latihan kamu boleh mencoba berulang kali, membuka 💡 Petunjuk, dan memakai 📍 Di mana salahku?</p></div>';
   h+='<div class="row"><button class="btn primary" data-aksi="mulai">Mulai ➜</button></div>';
@@ -94,7 +99,7 @@ function lihatKunci(){
 }
 function lanjut(){var S=L.S;if(S.s<2){S.s++;L.reset();render();}else{tahap='selesai';render();PL.Plus.say('selesai');}}
 function aksi(a,b){
-  if(a==='tipe'){pick.t=b.dataset.v==='C'?'C':+b.dataset.v;soalBaru();}
+  if(a==='tipe'){pick.t=b.dataset.v==='C'?'C':+b.dataset.v;if(pick.t!=='C'&&pick.l!=='C'&&LEVEL_TIPE[pick.t].indexOf(pick.l)<0)pick.l='C';soalBaru();}
   else if(a==='level'){pick.l=b.dataset.v;soalBaru();}
   else if(a==='acak')soalBaru();
   else if(a==='mulai'){tahap='kerja';L.S.s=0;L.reset();render();PL.Plus.say('sapa');}
