@@ -86,8 +86,8 @@ function tampilSesudah(){
 function lanjut(){K.after=null;if(K.g.complete){selesai();return;}sinkron();render();}
 function selesai(){setTahap('hasil');hentiWaktu();render();kirimSkor();}
 function meta(){
-  var g=K.g||{score:0,max:48,done:0},p=Math.min(7,Math.floor(g.done/3)),Q=L.S.Q;
-  return (K.sess&&K.sess.nama?esc(K.sess.nama)+' · ':'')+'Soal '+(p+1)+' dari 8 · '+esc(Q.jd)+' · '+esc(Q.lv)+' · Skor '+g.score+' / '+g.max
+  var g=K.g||{score:0,max:CORE.NSOAL*CORE.NLANGKAH*2,done:0},p=Math.min(CORE.NSOAL-1,Math.floor(g.done/3)),Q=L.S.Q;
+  return (K.sess&&K.sess.nama?esc(K.sess.nama)+' · ':'')+'Soal '+(p+1)+' dari '+CORE.NSOAL+' · '+esc(Q.jd)+' · '+esc(Q.lv)+' · Skor '+g.score+' / '+g.max
     +' · <span class="tmr">⏱ '+sisa()+'</span>'+(CONFIG.ENDPOINT?' · <span class="svb">'+svTeks()+'</span>':' · <span class="muted">mode uji</span>');
 }
 /* ---------- waktu ---------- */
@@ -144,7 +144,7 @@ function teksCek(err){
 function panelMasuk(){
   var pend=ambilTertunda();
   L.el.panel.innerHTML='<h2>Kuis · Masuk</h2>'
-    +'<div class="note"><p>Kuis berisi <b>8 soal</b> (setiap soal 3 langkah). Setiap langkah boleh dicoba <b>dua kali</b>. Benar pada percobaan pertama mendapat 2 poin, pada percobaan kedua 1 poin.</p>'
+    +'<div class="note"><p>Kuis berisi <b>'+CORE.NSOAL+' soal</b> (setiap soal 3 langkah). Setiap langkah boleh dicoba <b>dua kali</b>. Benar pada percobaan pertama mendapat 2 poin, pada percobaan kedua 1 poin.</p>'
     +'<p>Skor <b>disetor ke gurumu</b> dan dihitung ulang oleh server dari jawabanmu, jadi kerjakan sendiri. Jawabanmu <b>tersimpan otomatis</b>. Jika halaman tertutup atau kamu pindah tab, masuk lagi (dalam batas waktu) untuk melanjutkan.</p></div>'
     +'<p class="lgCek">'+teksCek()+'</p>'
     +(pend?'<div class="rule">Ada skor yang <b>belum terkirim</b> dari kuis sebelumnya. <button class="btn" data-aksi="kirim-tertunda">Kirim sekarang</button></div>':'')
@@ -218,7 +218,7 @@ function pendNotice(el){
     }).catch(function(err){msg.innerHTML='⚠ '+esc(pesanJaringan(err));b.disabled=false;});
   };
 }
-var RLAB={T1:'Tipe 1 · Menggambar DP',T2:'Tipe 2 · Sistem dari DP',T3:'Tipe 3 · Kasus kontekstual',T4:'Tipe 4 · Nilai maksimum/minimum',LOTS:'LOTS',MOTS:'MOTS',HOTS:'HOTS'};
+var RLAB={T2:'Tipe 2 · Sistem dari DP',T3:'Tipe 3 · Kasus kontekstual',T4:'Tipe 4 · Nilai maksimum/minimum',LOTS:'LOTS',MOTS:'MOTS',HOTS:'HOTS'};
 function panelHasil(){
   var snd=K.send||{state:'off'},ok=snd.state==='ok',g=K.g,s=g.score,m=g.max,rin=g.rinci,miss;
   if(ok){s=snd.res.skor;m=snd.res.maks;rin=snd.res.rinci||rin;miss=snd.res.perluDiperkuat||[];}
@@ -230,7 +230,7 @@ function panelHasil(){
   else if(ok)h+='<div class="fb ok">✔ Skor dihitung ulang oleh server dari jawabanmu dan sudah tercatat untuk gurumu.'+(snd.res.ulang?' (Skor ini sudah pernah dikirim sebelumnya.)':'')+'</div>';
   else if(snd.state==='err')h+='<div class="fb bad">'+esc(snd.msg||'Gagal mengirim skor.')+(snd.retry?' Skormu <b>belum tercatat</b>. Pastikan internet menyala, lalu tekan “Kirim ulang”.':'')+'</div>';
   else h+='<div class="fb info">Mode uji, skor tidak disetor ke server.</div>';
-  h+='<table class="tbl rinci"><tr><th>Bagian</th><th>Poin</th></tr>'+['T1','T2','T3','T4','LOTS','MOTS','HOTS'].map(function(k){return '<tr><td>'+RLAB[k]+'</td><td>'+rin[k][0]+' / '+rin[k][1]+'</td></tr>';}).join('')+'</table>';
+  h+='<table class="tbl rinci"><tr><th>Bagian</th><th>Poin</th></tr>'+['T2','T3','T4','LOTS','MOTS','HOTS'].map(function(k){return '<tr><td>'+RLAB[k]+'</td><td>'+rin[k][0]+' / '+rin[k][1]+'</td></tr>';}).join('')+'</table>';
   h+='<p>'+pesan+'</p>'+(miss.length?'<p><b>Perlu diperkuat</b> → '+miss.map(esc).join(', ')+'.</p>':'<p>Semua langkah benar pada percobaan pertama. 👏</p>');
   var b='';
   if(snd.state==='err'&&snd.retry)b+='<button class="btn primary" data-aksi="kirim-ulang">Kirim ulang</button>';
