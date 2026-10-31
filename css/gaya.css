@@ -368,6 +368,9 @@ table.txy input.num{width:76px}
 #tab-kuis:not([data-tahap="kerja"]) :is(.kartu,.progres){display:none}
 /* Latihan: tombol "Ulangi" di kartu soal tidak berguna sebelum mulai */
 #tab-latihan[data-tahap="intro"] .kartu [data-aksi="ulangi"]{display:none}
+/* Halaman materi (index.html) tidak menautkan ke kuis.html: guru membagikan tautan kuis sendiri.
+   Hapus baris di bawah ini bila tombol "Kuis ➜" di Latihan Mandiri ingin ditampilkan lagi. */
+body[data-halaman="materi"] [data-aksi="ke-kuis"]{display:none}
 /* Kuis: tanda kecil bahwa jawaban dinilai (warna aksen kuning) */
 body[data-mode="kuis"] .tab-view .kartu{border-left:4px solid var(--amber)}
 

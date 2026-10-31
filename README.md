@@ -1,13 +1,18 @@
 # Program Linear: dari Contoh Kontekstual ke Nilai Optimum
 
-Media pembelajaran Matematika Kelas X (Fase E) dengan tiga tab: **Belajar**, **Latihan Mandiri**, dan **Kuis**.
-Skor Kuis disetor ke Google Sheet lewat Google Apps Script.
+Media pembelajaran Matematika Kelas X (Fase E), terbagi menjadi dua halaman:
+
+- **`index.html`** (halaman materi): tab **Belajar** dan **Latihan Mandiri**.
+- **`kuis.html`** (halaman kuis): **Kuis** saja. Skor disetor ke Google Sheet lewat Google Apps Script.
+
+Halaman materi tidak menautkan ke kuis, jadi guru membagikan tautan kuis sendiri saat kuis dimulai.
 
 ## Isi folder
 
 ```
 media-nilai-optimum/
-├── index.html            kerangka halaman: satu <section> untuk setiap tab
+├── index.html            halaman MATERI: tab Belajar + Latihan Mandiri
+├── kuis.html             halaman KUIS: tab Kuis saja
 ├── .nojekyll             berkas kosong; membuat GitHub Pages menyajikan file apa adanya
 ├── css/
 │   └── gaya.css          seluruh tampilan, disusun dalam lapisan (@layer)
@@ -19,7 +24,7 @@ media-nilai-optimum/
 │   ├── belajar.js        perilaku tab Belajar
 │   ├── latihan.js        perilaku tab Latihan Mandiri
 │   ├── kuis.js           perilaku tab Kuis (masuk, simpan progres, kirim skor)
-│   └── main.js           pengatur perpindahan tab
+│   └── main.js           pengatur tab (dipakai kedua halaman)
 └── server/
     └── Code.gs           SALINAN kode server; dipasang di Google Apps Script, BUKAN dijalankan GitHub
 ```
@@ -29,6 +34,7 @@ media-nilai-optimum/
 | Yang ingin diubah | File |
 |---|---|
 | Alamat server kuis | `js/config.js` |
+| Menampilkan lagi tombol "Kuis ➜" di Latihan Mandiri | `css/gaya.css`, hapus baris `body[data-halaman="materi"] [data-aksi="ke-kuis"]` |
 | Teks materi, contoh, Pertanyaan Diskusi | `js/belajar-data.js` |
 | Tampilan yang hanya berlaku di satu mode | `css/gaya.css`, bagian `@layer mode` |
 | Perilaku tombol atau alur satu tab | `js/belajar.js`, `js/latihan.js`, atau `js/kuis.js` |
@@ -64,7 +70,8 @@ Mode aktif ditulis di `<body data-mode="belajar|latihan|kuis">`, jadi aturan khu
    - Branch: **main**, folder **/ (root)** → **Save**.
 5. **Tunggu 1–2 menit**, lalu muat ulang halaman Settings → Pages.
    Alamatnya muncul seperti `https://namaakun.github.io/nilai-optimum/`.
-   Bagikan alamat inilah kepada siswa.
+   - Materi: `https://namaakun.github.io/nilai-optimum/` (bisa juga `…/#latihan` untuk langsung ke Latihan Mandiri)
+   - Kuis: `https://namaakun.github.io/nilai-optimum/kuis.html`
 
 ## Menghubungkan ke Google Sheet
 
@@ -77,7 +84,7 @@ Mode aktif ditulis di `<body data-mode="belajar|latihan|kuis">`, jadi aturan khu
    window.OPTIMUM_CONFIG={ENDPOINT:"https://script.google.com/macros/s/…/exec",MATERI:"optimum"};
    ```
    → **Commit changes**. Tunggu 1–2 menit.
-4. Buka alamat GitHub Pages → tab **Kuis**. Harus muncul
+4. Buka `kuis.html` di alamat GitHub Pages. Harus muncul
    **"✔ Halaman dan server cocok (versi 2026-10-30.1)"**.
 
 Bila `ENDPOINT` dikosongkan, Kuis berjalan dalam **mode uji**: bisa dikerjakan, tetapi skor tidak disetor.
@@ -96,17 +103,18 @@ Ada tiga cara, dan ketiganya harus menunjukkan kode yang sama, misalnya `2026-10
   Jika salah satu diubah, salin perubahan ke yang lain, terbitkan versi baru Apps Script
   (Deploy → Kelola penerapan → pensil → Versi baru → Terapkan), lalu unggah `core.js` ke GitHub.
   Lakukan sebelum kuis dimulai: siswa yang sedang mengerjakan dengan versi lama tidak dapat melanjutkan.
-- **Setiap memperbarui file di GitHub, naikkan penanda versi** di `index.html`
-  (misalnya `?v=2026-10-30.1` → `?v=2026-11-05.1` pada semua baris `<link>` dan `<script>`).
+- **Setiap memperbarui file di GitHub, naikkan penanda versi** di `index.html` **dan** `kuis.html`
+  (misalnya `?v=2026-11-01.1` → `?v=2026-11-05.1` pada semua baris `<link>` dan `<script>`).
   Tanpa ini, peramban siswa bisa tetap memakai salinan lama.
   Cara cepat di GitHub: buka `index.html` → pensil → tekan Ctrl+F untuk mencari `?v=` → ubah semuanya → Commit.
-- Urutan `<script>` di `index.html` jangan diubah:
-  `config → core → komponen → belajar-data → belajar → latihan → kuis → main`.
+- Urutan `<script>` jangan diubah:
+  - `index.html`: `config → core → komponen → petunjuk → belajar-data → belajar → latihan → main`
+  - `kuis.html`: `config → core → komponen → kuis → main`
 - Repositori bersifat publik, jadi isi `server/Code.gs` dapat dibaca orang lain. Ini aman:
   kunci rahasia server dibuat otomatis dan disimpan di Script Properties, bukan di file.
   Daftar siswa dan PIN hanya ada di Google Sheet.
 
 ## Mencoba di komputer sendiri
 
-Klik dua kali `index.html`. Semua tab berjalan langsung dari folder tanpa server.
+Klik dua kali `index.html` (materi) atau `kuis.html` (kuis). Keduanya berjalan langsung dari folder tanpa server.
 Rumus KaTeX memerlukan internet; tanpa internet, rumus tampil sebagai teks biasa.
