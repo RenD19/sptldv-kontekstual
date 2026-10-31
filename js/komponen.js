@@ -517,7 +517,8 @@ PL.Langkah=function(sec,opsi){
    opsi.petunjukLanjut(Q,s,St) : petunjuk tambahan yang tampil setelah petunjuk CORE
    opsi.gerbangPetunjuk = n     : petunjuk ke-(n+1) dan seterusnya baru terbuka setelah
                                   siswa mencoba menjawab minimal sekali pada langkah itu
-   Petunjuk lama diringkas menjadi satu baris yang bisa diketuk; hanya yang terbaru tampil penuh. */
+   Semua petunjuk yang sudah dibuka tampil penuh. bukaSemuaPetunjuk() membuka seluruhnya
+   (dipakai saat siswa menekan "Lihat jawaban"). */
 function daftarPetunjuk(){
 var St=curS();if(!St)return [];
 var x=[];
@@ -526,16 +527,17 @@ return St.h.concat(x);
 }
 function gerbangTertutup(){var g=opsi.gerbangPetunjuk;return g!=null&&S.hints>=g&&S.tries<1;}
 function tambahPetunjuk(sapa){var l=daftarPetunjuk();if(!l.length||S.hints>=l.length||gerbangTertutup())return;S.hints++;renderHints();if(sapa)PL.Plus.say('petunjuk');}
+function bukaSemuaPetunjuk(){if(!opsi.petunjuk)return;S.hints=daftarPetunjuk().length;renderHints();}
 function ringkas(h){
 var t=String(h).replace(/<table[\s\S]*?<\/table>/g,' ').replace(/<[^>]+>/g,'').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&').replace(/\s+/g,' ').trim();
 return esc(t.length>70?t.slice(0,67)+'…':t);
 }
 function renderHints(){
 var box=pq('.hints');if(!box)return;
-var St=curS(),l=daftarPetunjuk(),n0=St?St.h.length:0,akhir=S.hints-1;
+var St=curS(),l=daftarPetunjuk(),n0=St?St.h.length:0;
+/* semua petunjuk yang sudah dibuka tampil penuh (tidak diringkas) */
 box.innerHTML=l.slice(0,S.hints).map(function(h,i){
 var isi=opsi.ubahPetunjuk?opsi.ubahPetunjuk(h):h,kls=i>=n0?' rinci':'';
-if(i<akhir)return '<li class="lama'+kls+'"><details><summary><b>Petunjuk '+(i+1)+'</b> '+ringkas(isi)+'</summary><div class="isi">'+isi+'</div></details></li>';
 return '<li class="baru'+kls+'">'+isi+'</li>';
 }).join('');
 box.hidden=!S.hints||!opsi.petunjuk;
@@ -657,7 +659,7 @@ tb.textContent=habis?'💡 Semua petunjuk sudah dibuka'
   return {S:S,el:el,bidang:bidang,curS:curS,muat:muat,reset:reset,collect:collect,
     panelLangkah:panelLangkah,renderKartu:renderKartu,renderProgres:renderProgres,renderBidang:renderBidang,kosong:kosong,
     fb:fb,tandai:tandai,kunciSemua:kunciSemua,isiKunci:isiKunci,teksKunci:teksKunci,tombol:tombol,tambahTombol:tambahTombol,
-    tambahPetunjuk:tambahPetunjuk,renderHints:renderHints,tombolDiMana:tombolDiMana,periksa:periksa,
+    tambahPetunjuk:tambahPetunjuk,renderHints:renderHints,bukaSemuaPetunjuk:bukaSemuaPetunjuk,tombolDiMana:tombolDiMana,periksa:periksa,
     panduan:function(){var St=curS();if(!St)return null;return St.k==='pt'?'Titiknya harus di sisi yang benar, ya':St.k==='pts'?'Periksa lagi pojok-pojok DP, ya':'Periksa isian yang berwarna merah, ya';}};
 };
 })(window.PL=window.PL||{});
