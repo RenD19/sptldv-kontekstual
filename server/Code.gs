@@ -30,8 +30,8 @@
    SHEET YANG DIISI SERVER
    Sesi  : satu baris per siswa yang masuk; kolom progres_json menyimpan jawaban
            sementara sehingga siswa yang keluar bisa melanjutkan dari langkah terakhir.
-   Skor  : skor (maks. 54), nilai 0–100, poin per tipe (T2–T4, masing-masing dari 18)
-           dan per level (LOTS, MOTS, HOTS, masing-masing dari 18), durasi, langkah
+   Skor  : skor (maks. 48), nilai 0–100, poin per tipe (T2 dari 12, T3 dan T4 dari 18)
+           dan per level (LOTS dari 12, MOTS dan HOTS dari 18), durasi, langkah
            yang perlu diperkuat, dan catatan (mis. "dilanjutkan 1 kali", "terlalu-cepat").
    Jejak : seluruh jawaban mentah siswa untuk diperiksa ulang bila perlu.
    ========================================================================== */
@@ -46,7 +46,7 @@ var KONFIG={
   MIN_DETIK_PER_LANGKAH:3,/* di bawah ini dianggap terlalu cepat (hanya ditandai, tidak ditolak) */
   MAKS_SALAH_PIN:5,       /* salah PIN berturut-turut sebelum dikunci sementara */
   KUNCI_MENIT:10,
-  MAKS_PERISTIWA:200      /* batas panjang jejak jawaban (9 soal × 3 langkah × 2 percobaan, ditambah cadangan) */
+  MAKS_PERISTIWA:200      /* batas panjang jejak jawaban (8 soal × 3 langkah × 2 percobaan, ditambah cadangan) */
 };
 
 /* ============================================================
@@ -57,10 +57,10 @@ var KONFIG={
    ============================================================ */
 var CORE=(function(){
 'use strict';
-var VERSI='2026-11-01.1';
+var VERSI='2026-11-01.2';
 var OPS=['<','≤','>','≥'];
 var MAKS_COBA=2;          /* percobaan per langkah di Kuis: benar ke-1 = 2 poin, ke-2 = 1 poin, salah dua kali = 0 */
-var NSOAL=9,NLANGKAH=3;
+var NSOAL=8,NLANGKAH=3;
 var TIPE={1:'Menggambar DP',2:'Sistem dari DP',3:'Kasus kontekstual',4:'Nilai maksimum/minimum'};
 var LEVEL={L:'LOTS',M:'MOTS',H:'HOTS'};
 var isSolid=function(op){return op==='≤'||op==='≥';};
@@ -715,20 +715,21 @@ function gen(t,l,rng,latihan,v){
   return l==='L'?g4L(rng):l==='M'?g4M(rng,v):g4H(rng,v);
 }
 
-/* Satu "paket kuis" ditentukan sepenuhnya oleh benih (seed): 9 soal, tipe 2–4 masing-masing 3 soal
-   (LOTS, MOTS, HOTS). Tipe 1 (Menggambar DP) tidak dipakai di kuis.
-   Hasilnya 3 LOTS + 3 MOTS + 3 HOTS, urut Tipe 2 → 4, di setiap tipe LOTS → HOTS. */
-var TIPE_KUIS=[2,3,4];
+/* Satu "paket kuis" ditentukan sepenuhnya oleh benih (seed): 8 soal.
+   Tipe 1 (Menggambar DP) dan Tipe 2 LOTS tidak dipakai di kuis.
+   Tipe 2: MOTS, HOTS · Tipe 3: LOTS, MOTS, HOTS · Tipe 4: LOTS, MOTS, HOTS
+   Hasilnya 2 LOTS + 3 MOTS + 3 HOTS, urut Tipe 2 → 4, di setiap tipe LOTS → HOTS. */
+var SUSUNAN_KUIS=[[2,'MH'],[3,'LMH'],[4,'LMH']];
 function buildPack(seed){
   var rng=mulberry32(seed),set=[];
-  TIPE_KUIS.forEach(function(t){
-    ['L','M','H'].forEach(function(l){set.push(gen(t,l,rng,false));});
+  SUSUNAN_KUIS.forEach(function(x){
+    x[1].split('').forEach(function(l){set.push(gen(x[0],l,rng,false));});
   });
   return {seed:seed,set:set};
 }
 
 /* ---------- penilai jejak jawaban ----------
-   jejak = daftar peristiwa {p,s,a,t}: p = nomor soal (0–8), s = nomor langkah (0–2), a = jawaban mentah,
+   jejak = daftar peristiwa {p,s,a,t}: p = nomor soal (0–7), s = nomor langkah (0–2), a = jawaban mentah,
    t = waktu (ms sejak mulai). Hanya jawaban mentah yang dipercaya; benar-salahnya dihitung ulang di sini.
    Setiap langkah paling banyak MAKS_COBA percobaan: benar ke-1 = 2 poin, benar ke-2 = 1 poin, salah dua kali = 0
    (langkah ditutup dan kunci ditampilkan). Jawaban berformat tidak sah diabaikan, tidak dihitung percobaan. */
@@ -816,7 +817,7 @@ var SH={siswa:'Siswa',sesi:'Sesi',skor:'Skor',jejak:'Jejak'};
 var HDR={
   Siswa:['kelas','absen','nama','pin'],
   Sesi:['nonce','materi','kelas','absen','nama','seed','mulai_ms','batas_ms','status','skor','maks','hasil_json','mulai','lanjut','progres_json','progres_waktu'],
-  Skor:['waktu','kelas','absen','nama','materi','skor','maks','nilai','T2_dari18','T3_dari18','T4_dari18','LOTS_dari18','MOTS_dari18','HOTS_dari18','durasi_detik','perlu_diperkuat','catatan','nonce'],
+  Skor:['waktu','kelas','absen','nama','materi','skor','maks','nilai','T2_dari12','T3_dari18','T4_dari18','LOTS_dari12','MOTS_dari18','HOTS_dari18','durasi_detik','perlu_diperkuat','catatan','nonce'],
   Jejak:['nonce','waktu','jejak_json']
 };
 var COL_SESI={nonce:0,materi:1,kelas:2,absen:3,nama:4,seed:5,mulai:6,batas:7,status:8,skor:9,maks:10,hasil:11,teks:12,lanjut:13,progres:14,ptime:15};

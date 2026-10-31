@@ -7,10 +7,10 @@
    ============================================================ */
 var CORE=(function(){
 'use strict';
-var VERSI='2026-11-01.1';
+var VERSI='2026-11-01.2';
 var OPS=['<','≤','>','≥'];
 var MAKS_COBA=2;          /* percobaan per langkah di Kuis: benar ke-1 = 2 poin, ke-2 = 1 poin, salah dua kali = 0 */
-var NSOAL=9,NLANGKAH=3;
+var NSOAL=8,NLANGKAH=3;
 var TIPE={1:'Menggambar DP',2:'Sistem dari DP',3:'Kasus kontekstual',4:'Nilai maksimum/minimum'};
 var LEVEL={L:'LOTS',M:'MOTS',H:'HOTS'};
 var isSolid=function(op){return op==='≤'||op==='≥';};
@@ -665,20 +665,21 @@ function gen(t,l,rng,latihan,v){
   return l==='L'?g4L(rng):l==='M'?g4M(rng,v):g4H(rng,v);
 }
 
-/* Satu "paket kuis" ditentukan sepenuhnya oleh benih (seed): 9 soal, tipe 2–4 masing-masing 3 soal
-   (LOTS, MOTS, HOTS). Tipe 1 (Menggambar DP) tidak dipakai di kuis.
-   Hasilnya 3 LOTS + 3 MOTS + 3 HOTS, urut Tipe 2 → 4, di setiap tipe LOTS → HOTS. */
-var TIPE_KUIS=[2,3,4];
+/* Satu "paket kuis" ditentukan sepenuhnya oleh benih (seed): 8 soal.
+   Tipe 1 (Menggambar DP) dan Tipe 2 LOTS tidak dipakai di kuis.
+   Tipe 2: MOTS, HOTS · Tipe 3: LOTS, MOTS, HOTS · Tipe 4: LOTS, MOTS, HOTS
+   Hasilnya 2 LOTS + 3 MOTS + 3 HOTS, urut Tipe 2 → 4, di setiap tipe LOTS → HOTS. */
+var SUSUNAN_KUIS=[[2,'MH'],[3,'LMH'],[4,'LMH']];
 function buildPack(seed){
   var rng=mulberry32(seed),set=[];
-  TIPE_KUIS.forEach(function(t){
-    ['L','M','H'].forEach(function(l){set.push(gen(t,l,rng,false));});
+  SUSUNAN_KUIS.forEach(function(x){
+    x[1].split('').forEach(function(l){set.push(gen(x[0],l,rng,false));});
   });
   return {seed:seed,set:set};
 }
 
 /* ---------- penilai jejak jawaban ----------
-   jejak = daftar peristiwa {p,s,a,t}: p = nomor soal (0–8), s = nomor langkah (0–2), a = jawaban mentah,
+   jejak = daftar peristiwa {p,s,a,t}: p = nomor soal (0–7), s = nomor langkah (0–2), a = jawaban mentah,
    t = waktu (ms sejak mulai). Hanya jawaban mentah yang dipercaya; benar-salahnya dihitung ulang di sini.
    Setiap langkah paling banyak MAKS_COBA percobaan: benar ke-1 = 2 poin, benar ke-2 = 1 poin, salah dua kali = 0
    (langkah ditutup dan kunci ditampilkan). Jawaban berformat tidak sah diabaikan, tidak dihitung percobaan. */
