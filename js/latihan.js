@@ -40,8 +40,10 @@ function namaRumus(h){
 var GERBANG_PETUNJUK=2;
 function petunjukLanjut(Q,s,St){return PL.Petunjuk?PL.Petunjuk.lanjut(Q,s,St):[];}
 
+var TIPE_LATIHAN=[2,3,4];
 function soalBaru(){
-  var t=pick.t==='C'?1+Math.floor(Math.random()*4):pick.t,l=pick.l==='C'?'LMH'[Math.floor(Math.random()*3)]:pick.l;
+  /* Tipe 1 (Menggambar DP) tidak dipakai di Latihan; Campuran memilih acak dari tipe 2–4 */
+  var t=pick.t==='C'?TIPE_LATIHAN[Math.floor(Math.random()*TIPE_LATIHAN.length)]:pick.t,l=pick.l==='C'?'LMH'[Math.floor(Math.random()*3)]:pick.l;
   L.muat(CORE.gen(t,l,Math.random,true),0);L.S.selesai=false;tahap='intro';render();
 }
 function render(){
@@ -55,7 +57,7 @@ function render(){
 }
 function panelIntro(){
   var Q=L.S.Q,h='<h2>Pilih soal</h2><p class="muted">Pilih tipe dan level. Setiap tekan 🎲 menghasilkan soal baru.</p>';
-  h+='<div class="lvl"><b>Tipe soal</b><div class="chips">'+[['1','1 · Menggambar DP'],['2','2 · Sistem dari DP'],['3','3 · Kasus kontekstual'],['4','4 · Nilai maks/min'],['C','Campuran']].map(function(o){return '<button class="chip'+(String(pick.t)===o[0]?' on':'')+'" data-aksi="tipe" data-v="'+o[0]+'">'+o[1]+'</button>';}).join('')+'</div></div>';
+  h+='<div class="lvl"><b>Tipe soal</b><div class="chips">'+[['2','2 · Sistem dari DP'],['3','3 · Kasus kontekstual'],['4','4 · Nilai maks/min'],['C','Campuran']].map(function(o){return '<button class="chip'+(String(pick.t)===o[0]?' on':'')+'" data-aksi="tipe" data-v="'+o[0]+'">'+o[1]+'</button>';}).join('')+'</div></div>';
   h+='<div class="lvl"><b>Level</b><div class="chips">'+[['L','LOTS'],['M','MOTS'],['H','HOTS'],['C','Campuran']].map(function(o){return '<button class="chip'+(pick.l===o[0]?' on':'')+'" data-aksi="level" data-v="'+o[0]+'">'+o[1]+'</button>';}).join('')+'</div></div>';
   h+='<div class="row"><button class="btn" data-aksi="acak">🎲 Soal acak</button></div>';
   h+='<div class="note"><p>Soal di atas termasuk <b>'+esc(Q.jd)+' · '+esc(Q.lv)+'</b> dengan kata kerja <i>'+esc(Q.kko)+'</i>.</p><p>Di Latihan kamu boleh mencoba berulang kali, membuka 💡 Petunjuk, dan memakai 📍 Di mana salahku?</p></div>';

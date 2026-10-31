@@ -7,10 +7,10 @@
    ============================================================ */
 var CORE=(function(){
 'use strict';
-var VERSI='2026-10-30.1';
+var VERSI='2026-11-01.1';
 var OPS=['<','≤','>','≥'];
 var MAKS_COBA=2;          /* percobaan per langkah di Kuis: benar ke-1 = 2 poin, ke-2 = 1 poin, salah dua kali = 0 */
-var NSOAL=8,NLANGKAH=3;
+var NSOAL=9,NLANGKAH=3;
 var TIPE={1:'Menggambar DP',2:'Sistem dari DP',3:'Kasus kontekstual',4:'Nilai maksimum/minimum'};
 var LEVEL={L:'LOTS',M:'MOTS',H:'HOTS'};
 var isSolid=function(op){return op==='≤'||op==='≥';};
@@ -665,27 +665,27 @@ function gen(t,l,rng,latihan,v){
   return l==='L'?g4L(rng):l==='M'?g4M(rng,v):g4H(rng,v);
 }
 
-/* Satu "paket kuis" ditentukan sepenuhnya oleh benih (seed): 8 soal, tiap tipe 2 soal.
-   Keempat tipe mendapat 1 soal MOTS; dua tipe (dipilih benih) mendapat soal LOTS, dua tipe lainnya soal HOTS.
-   Hasilnya 2 LOTS + 4 MOTS + 2 HOTS (25% : 50% : 25%), urut Tipe 1 → 4. */
+/* Satu "paket kuis" ditentukan sepenuhnya oleh benih (seed): 9 soal, tipe 2–4 masing-masing 3 soal
+   (LOTS, MOTS, HOTS). Tipe 1 (Menggambar DP) tidak dipakai di kuis.
+   Hasilnya 3 LOTS + 3 MOTS + 3 HOTS, urut Tipe 2 → 4, di setiap tipe LOTS → HOTS. */
+var TIPE_KUIS=[2,3,4];
 function buildPack(seed){
-  var rng=mulberry32(seed),tp=shuffle([1,2,3,4],rng),lots=[tp[0],tp[1]],set=[];
-  [1,2,3,4].forEach(function(t){
-    var lv=lots.indexOf(t)>=0?['L','M']:['M','H'];
-    lv.forEach(function(l){set.push(gen(t,l,rng,false));});
+  var rng=mulberry32(seed),set=[];
+  TIPE_KUIS.forEach(function(t){
+    ['L','M','H'].forEach(function(l){set.push(gen(t,l,rng,false));});
   });
   return {seed:seed,set:set};
 }
 
 /* ---------- penilai jejak jawaban ----------
-   jejak = daftar peristiwa {p,s,a,t}: p = nomor soal (0–7), s = nomor langkah (0–2), a = jawaban mentah,
+   jejak = daftar peristiwa {p,s,a,t}: p = nomor soal (0–8), s = nomor langkah (0–2), a = jawaban mentah,
    t = waktu (ms sejak mulai). Hanya jawaban mentah yang dipercaya; benar-salahnya dihitung ulang di sini.
    Setiap langkah paling banyak MAKS_COBA percobaan: benar ke-1 = 2 poin, benar ke-2 = 1 poin, salah dua kali = 0
    (langkah ditutup dan kunci ditampilkan). Jawaban berformat tidak sah diabaikan, tidak dihitung percobaan. */
 function gradeTrace(pack,trace){
   var Qs=pack.set,ev=Array.isArray(trace)?trace:[],total=Qs.length*NLANGKAH;
   var c=0,tries=0,score=0,ignored=0,steps=[],missed={},lastT=0,mono=true,rinci={};
-  ['T1','T2','T3','T4','LOTS','MOTS','HOTS'].forEach(function(k){rinci[k]=[0,0];});
+  ['T2','T3','T4','LOTS','MOTS','HOTS'].forEach(function(k){rinci[k]=[0,0];});
   Qs.forEach(function(Q){rinci['T'+Q.t][1]+=2*NLANGKAH;rinci[LEVEL[Q.l]][1]+=2*NLANGKAH;});
   function close(pts){
     var Q=Qs[Math.floor(c/NLANGKAH)],S=Q.st[c%NLANGKAH];
