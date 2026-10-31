@@ -86,6 +86,7 @@ function periksa(a,r){
 }
 function lihatKunci(){
   var S=L.S;L.isiKunci();S.solved=true;L.panelLangkah();L.kunciSemua();
+  L.bukaSemuaPetunjuk(); /* semua petunjuk dibuka agar siswa bisa belajar dari kesalahan */
   L.fb('info','🔑 Jawaban yang benar adalah <b>'+L.teksKunci()+'</b>. Pelajari, lalu lanjutkan.');
   L.tombol('<button class="btn primary" data-aksi="lanjut">'+(S.s<2?'Langkah berikutnya ➜':'Lihat pembahasan ➜')+'</button>');L.renderBidang();
 }
