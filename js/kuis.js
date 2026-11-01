@@ -255,7 +255,7 @@ PL.TAB=PL.TAB||{};
 PL.TAB.kuis={
   init:function(){
     sec=$('#tab-kuis');
-    L=PL.Langkah(sec,{petunjuk:false,diManaSalah:false,periksa:periksa,aksi:aksi,meta:meta,bolehKlik:function(){return !K.after;}});
+    L=PL.Langkah(sec,{petunjuk:false,diManaSalah:false,pratinjau:true,periksa:periksa,aksi:aksi,meta:meta,bolehKlik:function(){return !K.after;}});
     this.bidang=L.bidang;this.L=L;
     L.el.panel.addEventListener('keydown',function(e){if(e.key==='Enter'&&/^lg/.test(e.target.id||'')){var b=sec.querySelector('[data-aksi="masuk"]');if(b&&!b.disabled)masuk(b);}});
     setTahap('masuk');
