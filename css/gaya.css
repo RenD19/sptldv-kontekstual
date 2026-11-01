@@ -405,3 +405,11 @@ body[data-mode="kuis"] #plusWrap{display:none}
 
 /* chip yang tidak tersedia (mis. LOTS untuk Tipe 2 di Latihan) */
 .chip:disabled{opacity:.4;cursor:not-allowed}
+
+/* Latihan: penyelesaian bertahap (rumus dua titik, substitusi, eliminasi) setelah benar / lihat jawaban */
+.penyelesaian{margin:10px 0 0;padding:8px 12px;border:1px solid #bfd3ff;border-left:4px solid var(--blue);border-radius:10px;background:#f5f8ff}
+.penyelesaian>b{display:block;margin-bottom:2px}
+.py-blok{margin:.45em 0 0}
+.py-blok>p{margin:0 0 .2em;font-size:.92rem;font-weight:600;color:var(--mut)}
+.py-tex{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;padding:2px 0;line-height:1.6}
+.py-tex>.katex{white-space:nowrap}

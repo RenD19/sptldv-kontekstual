@@ -73,12 +73,25 @@ function panelSelesai(){
   L.el.panel.innerHTML='<h2>🎉 Soal selesai</h2><h3>Pembahasan</h3><ol class="sum">'+L.S.Q.bahas.map(function(b){return '<li>'+b+'</li>';}).join('')+'</ol>'
     +'<div class="row"><button class="btn primary" data-aksi="acak">Soal berikutnya ➜</button><button class="btn" data-aksi="ulangi">↺ Ulangi soal ini</button><button class="btn ghost" data-aksi="ke-kuis">Kuis ➜</button></div>';
 }
+/* ---------- Penyelesaian bertahap ----------
+   Setelah jawaban benar atau 🔑 Lihat jawaban, langkah yang memerlukan teknik aljabar
+   (rumus dua titik, substitusi, eliminasi) ditampilkan lengkap. Isinya dari js/penyelesaian.js. */
+function tampilPenyelesaian(){
+  var pn=L.el.panel,lama=pn.querySelector('.penyelesaian');if(lama)lama.remove();
+  if(!PL.Penyelesaian)return;
+  var bl;try{bl=PL.Penyelesaian.langkah(L.S.Q,L.S.s);}catch(err){if(window.console)console.warn('penyelesaian',err);return;}
+  if(!bl||!bl.length)return;
+  var fb=pn.querySelector('.fb');if(!fb)return;
+  fb.insertAdjacentHTML('afterend',PL.Penyelesaian.html(bl));
+  var box=pn.querySelector('.penyelesaian');if(box&&PL.Math)PL.Math.render(box);
+}
 function periksa(a,r){
   var S=L.S;
   if(r.ok){
     S.solved=true;L.tandai(r);L.kunciSemua();
     var hh=L.el.panel.querySelector('.hints');if(hh)hh.hidden=true;
     L.fb('ok','Tepat! '+(S.s<S.Q.st.length-1?'Lanjut ke langkah berikutnya.':'Soal ini selesai.'));
+    tampilPenyelesaian();
     PL.Plus.say(S.s<S.Q.st.length-1?'benar':'selesai');
     L.tombol('<button class="btn primary" data-aksi="lanjut">'+(S.s<S.Q.st.length-1?'Langkah berikutnya ➜':'Lihat pembahasan ➜')+'</button>');
     L.renderBidang();L.renderProgres();
@@ -95,6 +108,7 @@ function lihatKunci(){
   var S=L.S;L.isiKunci();S.solved=true;L.panelLangkah();L.kunciSemua();
   L.bukaSemuaPetunjuk(); /* semua petunjuk dibuka agar siswa bisa belajar dari kesalahan */
   L.fb('info','🔑 Jawaban yang benar adalah <b>'+L.teksKunci()+'</b>. Pelajari, lalu lanjutkan.');
+  tampilPenyelesaian();
   L.tombol('<button class="btn primary" data-aksi="lanjut">'+(S.s<S.Q.st.length-1?'Langkah berikutnya ➜':'Lihat pembahasan ➜')+'</button>');L.renderBidang();
 }
 function lanjut(){var S=L.S;if(S.s<S.Q.st.length-1){S.s++;L.reset();render();}else{tahap='selesai';render();PL.Plus.say('selesai');}}

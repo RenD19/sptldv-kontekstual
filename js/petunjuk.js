@@ -473,5 +473,8 @@ function uji(n){
   return lap.length?lap:'Semua petunjuk lanjutan aman.';
 }
 
-PL.Petunjuk={lanjut:lanjut,uji:uji,LANJUT:LANJUT};
+PL.Petunjuk={lanjut:lanjut,uji:uji,LANJUT:LANJUT,
+  /* alat bantu yang juga dipakai penyelesaian.js */
+  alat:{tanda:tanda,sudut:sudut,koefDariNilai:koefDariNilai,koefDariSoal:koefDariSoal,koefLin:koefLin,
+        garisBatas:garisBatas,noGaris:noGaris,ambil:ambil,namaVariabel:namaVariabel}};
 })(window.PL=window.PL||{});
