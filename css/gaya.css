@@ -106,7 +106,7 @@ ol.sum li{margin:.5em 0}
 .trow p{margin:.3em 0}
 .eqin{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:1.25rem;margin:10px 0}
 .eqin .num{width:84px}
-/* Latihan: pratinjau "Persamaanmu" di samping isian koefisien */
+/* Latihan dan Kuis: pratinjau "Persamaanmu" di samping isian koefisien */
 .eqwrap{display:flex;flex-wrap:wrap;align-items:center;gap:4px 18px}
 .eqwrap>.eqin{margin:10px 0}
 .pratinjau{display:flex;flex-direction:column;gap:2px;min-width:150px;padding:6px 12px;border:1px dashed var(--line);border-radius:10px;background:#f8fbff}
