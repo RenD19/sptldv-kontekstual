@@ -16,7 +16,7 @@ function setTahap(t){K.tahap=t;sec.dataset.tahap=t;L.S.tahap=t;}
 function sinkron(){
   K.g=CORE.gradeTrace(K.pack,K.trace);
   if(K.g.complete)return;
-  var p=Math.floor(K.g.done/3),s=K.g.done%3;
+  var p=K.g.p,s=K.g.s;
   if(L.S.Q!==K.pack.set[p]||L.S.s!==s)L.muat(K.pack.set[p],s);
   L.S.tries=K.g.tries;L.S.selesai=false;
 }
@@ -46,12 +46,12 @@ function mulaiKuis(seed,sess,jejak){
   sv.ok=true;sv.busy=false;sv.dirty=false;
   if(K.g.complete){selesai();return;}
   render();PL.Plus.say('sapa');
-  if(sess.lanjut&&K.trace.length)PL.Plus.ucap('Selamat datang kembali! Kita lanjutkan dari soal '+(Math.floor(K.g.done/3)+1)+'.');
+  if(sess.lanjut&&K.trace.length)PL.Plus.ucap('Selamat datang kembali! Kita lanjutkan dari soal '+(K.g.p+1)+'.');
   mulaiWaktu();
 }
 /* merekam setiap percobaan jawaban (bukan skor!) untuk dinilai ulang oleh server */
 function catat(a){
-  var p=Math.floor(K.g.done/3),s=K.g.done%3;
+  var p=K.g.p,s=K.g.s;
   K.trace.push({p:p,s:s,a:a,t:Math.round(performance.now()-K.sess.t0c)});
   simpanLokal();simpanServer();
 }
@@ -80,13 +80,13 @@ function tampilSesudah(){
   if(A.pts===2)L.fb('ok','✔ Benar pada percobaan pertama, <b>+2 poin</b>.');
   else if(A.pts===1)L.fb('ok','✔ Benar pada percobaan kedua, <b>+1 poin</b>.');
   else L.fb('bad','✗ Belum tepat dua kali, jadi <b>0 poin</b>. Jawaban yang benar adalah <b>'+L.teksKunci()+'</b>.');
-  var soalBaru=!akhir&&(K.g.done%3===0);
+  var soalBaru=!akhir&&K.g.s===0;
   L.tombol('<button class="btn primary" data-aksi="lanjut">'+(akhir?'Selesai, kirim skor ➜':soalBaru?'Soal berikutnya ➜':'Langkah berikutnya ➜')+'</button>');
 }
 function lanjut(){K.after=null;if(K.g.complete){selesai();return;}sinkron();render();}
 function selesai(){setTahap('hasil');hentiWaktu();render();kirimSkor();}
 function meta(){
-  var g=K.g||{score:0,max:CORE.NSOAL*CORE.NLANGKAH*2,done:0},p=Math.min(CORE.NSOAL-1,Math.floor(g.done/3)),Q=L.S.Q;
+  var g=K.g||{score:0,max:0,done:0,p:0},p=Math.min(CORE.NSOAL-1,g.p),Q=L.S.Q;
   return (K.sess&&K.sess.nama?esc(K.sess.nama)+' · ':'')+'Soal '+(p+1)+' dari '+CORE.NSOAL+' · '+esc(Q.jd)+' · '+esc(Q.lv)+' · Skor '+g.score+' / '+g.max
     +' · <span class="tmr">⏱ '+sisa()+'</span>'+(CONFIG.ENDPOINT?' · <span class="svb">'+svTeks()+'</span>':' · <span class="muted">mode uji</span>');
 }
@@ -144,7 +144,7 @@ function teksCek(err){
 function panelMasuk(){
   var pend=ambilTertunda();
   L.el.panel.innerHTML='<h2>Kuis · Masuk</h2>'
-    +'<div class="note"><p>Kuis berisi <b>'+CORE.NSOAL+' soal</b> (setiap soal 3 langkah). Setiap langkah boleh dicoba <b>dua kali</b>. Benar pada percobaan pertama mendapat 2 poin, pada percobaan kedua 1 poin.</p>'
+    +'<div class="note"><p>Kuis berisi <b>'+CORE.NSOAL+' soal</b> (setiap soal 2–3 langkah). Setiap langkah boleh dicoba <b>dua kali</b>. Benar pada percobaan pertama mendapat 2 poin, pada percobaan kedua 1 poin.</p>'
     +'<p>Skor <b>disetor ke gurumu</b> dan dihitung ulang oleh server dari jawabanmu, jadi kerjakan sendiri. Jawabanmu <b>tersimpan otomatis</b>. Jika halaman tertutup atau kamu pindah tab, masuk lagi (dalam batas waktu) untuk melanjutkan.</p></div>'
     +'<p class="lgCek">'+teksCek()+'</p>'
     +(pend?'<div class="rule">Ada skor yang <b>belum terkirim</b> dari kuis sebelumnya. <button class="btn" data-aksi="kirim-tertunda">Kirim sekarang</button></div>':'')

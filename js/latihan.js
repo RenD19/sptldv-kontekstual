@@ -78,9 +78,9 @@ function periksa(a,r){
   if(r.ok){
     S.solved=true;L.tandai(r);L.kunciSemua();
     var hh=L.el.panel.querySelector('.hints');if(hh)hh.hidden=true;
-    L.fb('ok','Tepat! '+(S.s<2?'Lanjut ke langkah berikutnya.':'Soal ini selesai.'));
-    PL.Plus.say(S.s<2?'benar':'selesai');
-    L.tombol('<button class="btn primary" data-aksi="lanjut">'+(S.s<2?'Langkah berikutnya ➜':'Lihat pembahasan ➜')+'</button>');
+    L.fb('ok','Tepat! '+(S.s<S.Q.st.length-1?'Lanjut ke langkah berikutnya.':'Soal ini selesai.'));
+    PL.Plus.say(S.s<S.Q.st.length-1?'benar':'selesai');
+    L.tombol('<button class="btn primary" data-aksi="lanjut">'+(S.s<S.Q.st.length-1?'Langkah berikutnya ➜':'Lihat pembahasan ➜')+'</button>');
     L.renderBidang();L.renderProgres();
   }else{
     S.tries++;L.tandai(r);S.lw={a:a,r:r};
@@ -95,9 +95,9 @@ function lihatKunci(){
   var S=L.S;L.isiKunci();S.solved=true;L.panelLangkah();L.kunciSemua();
   L.bukaSemuaPetunjuk(); /* semua petunjuk dibuka agar siswa bisa belajar dari kesalahan */
   L.fb('info','🔑 Jawaban yang benar adalah <b>'+L.teksKunci()+'</b>. Pelajari, lalu lanjutkan.');
-  L.tombol('<button class="btn primary" data-aksi="lanjut">'+(S.s<2?'Langkah berikutnya ➜':'Lihat pembahasan ➜')+'</button>');L.renderBidang();
+  L.tombol('<button class="btn primary" data-aksi="lanjut">'+(S.s<S.Q.st.length-1?'Langkah berikutnya ➜':'Lihat pembahasan ➜')+'</button>');L.renderBidang();
 }
-function lanjut(){var S=L.S;if(S.s<2){S.s++;L.reset();render();}else{tahap='selesai';render();PL.Plus.say('selesai');}}
+function lanjut(){var S=L.S;if(S.s<S.Q.st.length-1){S.s++;L.reset();render();}else{tahap='selesai';render();PL.Plus.say('selesai');}}
 function aksi(a,b){
   if(a==='tipe'){pick.t=b.dataset.v==='C'?'C':+b.dataset.v;if(pick.t!=='C'&&pick.l!=='C'&&LEVEL_TIPE[pick.t].indexOf(pick.l)<0)pick.l='C';soalBaru();}
   else if(a==='level'){pick.l=b.dataset.v;soalBaru();}

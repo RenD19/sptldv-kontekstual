@@ -30,8 +30,8 @@
    SHEET YANG DIISI SERVER
    Sesi  : satu baris per siswa yang masuk; kolom progres_json menyimpan jawaban
            sementara sehingga siswa yang keluar bisa melanjutkan dari langkah terakhir.
-   Skor  : skor (maks. 48), nilai 0–100, poin per tipe (T2 dari 12, T3 dan T4 dari 18)
-           dan per level (LOTS dari 12, MOTS dan HOTS dari 18), durasi, langkah
+   Skor  : skor (maks. 82), nilai 0–100, poin per tipe dan per level (nilai maksimumnya
+           tertulis di judul kolom, dihitung otomatis dari susunan kuis), durasi, langkah
            yang perlu diperkuat, dan catatan (mis. "dilanjutkan 1 kali", "terlalu-cepat").
    Jejak : seluruh jawaban mentah siswa untuk diperiksa ulang bila perlu.
    ========================================================================== */
@@ -46,7 +46,7 @@ var KONFIG={
   MIN_DETIK_PER_LANGKAH:3,/* di bawah ini dianggap terlalu cepat (hanya ditandai, tidak ditolak) */
   MAKS_SALAH_PIN:5,       /* salah PIN berturut-turut sebelum dikunci sementara */
   KUNCI_MENIT:10,
-  MAKS_PERISTIWA:200      /* batas panjang jejak jawaban (8 soal × 3 langkah × 2 percobaan, ditambah cadangan) */
+  MAKS_PERISTIWA:200      /* batas panjang jejak jawaban (41 langkah × 2 percobaan, ditambah cadangan) */
 };
 
 /* ============================================================
@@ -57,10 +57,10 @@ var KONFIG={
    ============================================================ */
 var CORE=(function(){
 'use strict';
-var VERSI='2026-11-01.2';
+var VERSI='2026-11-01.3';
 var OPS=['<','≤','>','≥'];
 var MAKS_COBA=2;          /* percobaan per langkah di Kuis: benar ke-1 = 2 poin, ke-2 = 1 poin, salah dua kali = 0 */
-var NSOAL=8,NLANGKAH=3;
+var NSOAL=14,NLANGKAH=3;   /* NLANGKAH = banyak langkah paling banyak per soal; 3M-a hanya 2 langkah */
 var TIPE={1:'Menggambar DP',2:'Sistem dari DP',3:'Kasus kontekstual',4:'Nilai maksimum/minimum'};
 var LEVEL={L:'LOTS',M:'MOTS',H:'HOTS'};
 var isSolid=function(op){return op==='≤'||op==='≥';};
@@ -537,14 +537,14 @@ function g3M(rng){
   var tk=rng()<.3,I,c,teks,labs;
   if(tk){I=genTkt(rng);c=I.ctx;teks=I.teks;labs=['(1) Kendala '+c.r[0].nm,'(2) Kendala '+c.r[1].nm];}
   else{c=pick(rng,CTX);I=genInst(rng,c);teks=story(I);labs=['(1) Kendala '+c.r[0].nm,'(2) Kendala '+c.r[1].nm];}
-  var cd=candidates(I.sys,I.box),vw={ln:2,sh:1,cd:cd};
+  /* 3M-a: 2 langkah (model kendala 1 dan 2) */
   return mkQ(3,'M','a',{kko:'memodelkan, menyelesaikan',pl:I.box,sys:I.sys,
-    soal:teks+' <i>Misalkan '+vars(c)+'.</i> Buat modelnya dan tentukan titik sudut DP.',
+    soal:teks+' <i>Misalkan '+vars(c)+'.</i> Buat model matematikanya.',
     st:[F('Model kendala (1)','TERJEMAHKAN kalimat kendala '+c.r[0].nm+' menjadi pertidaksamaan.',[inI(labs[0],I.ls[0])],['Kalikan banyak benda dengan kebutuhan per benda, lalu jumlahkan.','Perhatikan kata kunci untuk memilih tanda. Boleh disederhanakan.']),
-        F('Model kendala (2)','TERJEMAHKAN kalimat kendala '+c.r[1].nm+' menjadi pertidaksamaan.',[inI(labs[1],I.ls[1])],['Kalikan banyak benda dengan kebutuhan per benda, lalu jumlahkan.','Perhatikan kata kunci untuk memilih tanda.']),
-        PS('Titik sudut DP','DP sudah digambar dari modelmu ditambah x ≥ 0, y ≥ 0. Klik <b>semua</b> titik sudut DP (titik bulat yang ditandai), lalu periksa.',I.cs,['Buat tabel x | y untuk setiap garis: isi x = 0 lalu hitung y, kemudian isi y = 0 lalu hitung x.','Titik sudut adalah titik pojok DP. Titik potong yang berada di luar DP bukan titik sudut.'],vw)],
-    vz:{ln:2,sh:1,mk:cornerMk(I.cs)},
-    bahas:['Model matematikanya '+modelS(I.sys)+'.','Titik sudut DP adalah '+I.cs.map(ptS).join(', ')+'.']});
+        F('Model kendala (2)','TERJEMAHKAN kalimat kendala '+c.r[1].nm+' menjadi pertidaksamaan.',[inI(labs[1],I.ls[1])],['Kalikan banyak benda dengan kebutuhan per benda, lalu jumlahkan.','Perhatikan kata kunci untuk memilih tanda.'])
+        ],
+    vz:{ln:2,sh:1},
+    bahas:['Model matematikanya '+modelS(I.sys)+'.']});
 }
 function g3H(rng,v){
   if(v==='a'){
@@ -715,16 +715,14 @@ function gen(t,l,rng,latihan,v){
   return l==='L'?g4L(rng):l==='M'?g4M(rng,v):g4H(rng,v);
 }
 
-/* Satu "paket kuis" ditentukan sepenuhnya oleh benih (seed): 8 soal.
-   Tipe 1 (Menggambar DP) dan Tipe 2 LOTS tidak dipakai di kuis.
-   Tipe 2: MOTS, HOTS · Tipe 3: LOTS, MOTS, HOTS · Tipe 4: LOTS, MOTS, HOTS
-   Hasilnya 2 LOTS + 3 MOTS + 3 HOTS, urut Tipe 2 → 4, di setiap tipe LOTS → HOTS. */
-var SUSUNAN_KUIS=[[2,'MH'],[3,'LMH'],[4,'LMH']];
+/* Satu "paket kuis" ditentukan sepenuhnya oleh benih (seed): 14 soal, satu soal untuk setiap varian
+   pada SUSUNAN_KUIS, urut seperti daftar. Varian 2H-r juga dipakai di kuis. */
+var SUSUNAN_KUIS=[[2,'M','a'],[2,'M','b'],[2,'H','r'],
+  [3,'L','a'],[3,'M','a'],[3,'H','a'],[3,'H','b'],[3,'H','c'],
+  [4,'L','a'],[4,'M','a'],[4,'M','b'],[4,'H','a'],[4,'H','b'],[4,'H','c']];
 function buildPack(seed){
   var rng=mulberry32(seed),set=[];
-  SUSUNAN_KUIS.forEach(function(x){
-    x[1].split('').forEach(function(l){set.push(gen(x[0],l,rng,false));});
-  });
+  SUSUNAN_KUIS.forEach(function(x){set.push(gen(x[0],x[1],rng,false,x[2]));});
   return {seed:seed,set:set};
 }
 
@@ -733,13 +731,19 @@ function buildPack(seed){
    t = waktu (ms sejak mulai). Hanya jawaban mentah yang dipercaya; benar-salahnya dihitung ulang di sini.
    Setiap langkah paling banyak MAKS_COBA percobaan: benar ke-1 = 2 poin, benar ke-2 = 1 poin, salah dua kali = 0
    (langkah ditutup dan kunci ditampilkan). Jawaban berformat tidak sah diabaikan, tidak dihitung percobaan. */
+/* posisi langkah ke-c (dihitung dari 0 untuk seluruh paket) → {p: nomor soal, s: nomor langkah} */
+function posLangkah(Qs,c){
+  for(var p=0;p<Qs.length;p++){if(c<Qs[p].st.length)return {p:p,s:c};c-=Qs[p].st.length;}
+  return {p:Qs.length,s:0};
+}
 function gradeTrace(pack,trace){
-  var Qs=pack.set,ev=Array.isArray(trace)?trace:[],total=Qs.length*NLANGKAH;
+  var Qs=pack.set,ev=Array.isArray(trace)?trace:[],total=0;
+  Qs.forEach(function(Q){total+=Q.st.length;});
   var c=0,tries=0,score=0,ignored=0,steps=[],missed={},lastT=0,mono=true,rinci={};
   ['T2','T3','T4','LOTS','MOTS','HOTS'].forEach(function(k){rinci[k]=[0,0];});
-  Qs.forEach(function(Q){rinci['T'+Q.t][1]+=2*NLANGKAH;rinci[LEVEL[Q.l]][1]+=2*NLANGKAH;});
+  Qs.forEach(function(Q){rinci['T'+Q.t][1]+=2*Q.st.length;rinci[LEVEL[Q.l]][1]+=2*Q.st.length;});
   function close(pts){
-    var Q=Qs[Math.floor(c/NLANGKAH)],S=Q.st[c%NLANGKAH];
+    var ps=posLangkah(Qs,c),Q=Qs[ps.p],S=Q.st[ps.s];
     steps.push(pts);score+=pts;rinci['T'+Q.t][0]+=pts;rinci[LEVEL[Q.l]][0]+=pts;
     if(pts<2){var k='Tipe '+Q.t+' · '+S.nm;missed[k]=(missed[k]||0)+1;}
     c++;tries=0;
@@ -749,13 +753,14 @@ function gradeTrace(pack,trace){
     if(!e||typeof e!=='object'){ignored++;continue;}
     if(isNum(e.t)){if(e.t<lastT)mono=false;else lastT=e.t;}
     if(c>=total){ignored++;continue;}
-    var p=Math.floor(c/NLANGKAH),s=c%NLANGKAH;
+    var ps=posLangkah(Qs,c),p=ps.p,s=ps.s;
     if(e.p!==p||e.s!==s||!valid(Qs[p],s,e.a)){ignored++;continue;}
     tries++;
     if(judge(Qs[p],s,e.a).ok)close(tries===1?2:1);
     else if(tries>=MAKS_COBA)close(0);
   }
-  return {score:score,max:total*2,done:c,complete:c===total,tries:tries,ignored:ignored,steps:steps,missed:missed,rinci:rinci,monotonic:mono,lastT:lastT};
+  var now=posLangkah(Qs,c);
+  return {score:score,max:total*2,done:c,total:total,p:now.p,s:now.s,complete:c===total,tries:tries,ignored:ignored,steps:steps,missed:missed,rinci:rinci,monotonic:mono,lastT:lastT};
 }
 
 /* jawaban salah yang sah (untuk cek()) */
@@ -783,7 +788,7 @@ function cek(){
   var pk=buildPack(20261029),rng=mulberry32(7),vs=[],sm=[],t=0;
   [1,2,3,4].forEach(function(tp){['L','M','H'].forEach(function(l){variants(tp,l,true).forEach(function(v){vs.push(gen(tp,l,rng,true,v));});});});
   pk.set.forEach(function(Q,p){
-    for(var s=0;s<NLANGKAH;s++){
+    for(var s=0;s<Q.st.length;s++){
       var m=(p+s)%3;
       if(m===0){sm.push({p:p,s:s,a:wrongAns(Q,s),t:++t});sm.push({p:p,s:s,a:keyAns(Q,s),t:++t});}
       else if(m===1){sm.push({p:p,s:s,a:null,t:++t});sm.push({p:p,s:s,a:keyAns(Q,s),t:++t});}
@@ -800,7 +805,7 @@ return {VERSI:VERSI,OPS:OPS,TND:TND,MAKS_COBA:MAKS_COBA,NSOAL:NSOAL,NLANGKAH:NLA
   nm:nm,rp:rp,lin:lin,ineqS:ineqS,eqS:eqS,ptS:ptS,fS:fS,subS:subS,norm:norm,L:L,AX:AX,
   boxPoly:boxPoly,clipHalf:clipHalf,region:region,area:area,inter:inter,holdsAll:holdsAll,holdsWeak:holdsWeak,onAnyLine:onAnyLine,
   corners:corners,candidates:candidates,findInside:findInside,FULL:FULL,boxQ1:boxQ1,
-  variants:variants,gen:gen,buildPack:buildPack,valid:valid,judge:judge,judgePt:judgePt,keyAns:keyAns,wrongAns:wrongAns,
+  variants:variants,gen:gen,buildPack:buildPack,posLangkah:posLangkah,SUSUNAN_KUIS:SUSUNAN_KUIS,valid:valid,judge:judge,judgePt:judgePt,keyAns:keyAns,wrongAns:wrongAns,
   gradeTrace:gradeTrace,cek:cek};
 })();
 
@@ -814,14 +819,16 @@ var MATERI={
   }
 };
 var SH={siswa:'Siswa',sesi:'Sesi',skor:'Skor',jejak:'Jejak'};
+/* maksimum poin setiap rincian (T2…HOTS), dihitung dari susunan kuis di CORE */
+var MAKS_RINCI=CORE.gradeTrace(CORE.buildPack(1),[]).rinci;
+var RINCI=['T2','T3','T4','LOTS','MOTS','HOTS'];
 var HDR={
   Siswa:['kelas','absen','nama','pin'],
   Sesi:['nonce','materi','kelas','absen','nama','seed','mulai_ms','batas_ms','status','skor','maks','hasil_json','mulai','lanjut','progres_json','progres_waktu'],
-  Skor:['waktu','kelas','absen','nama','materi','skor','maks','nilai','T2_dari12','T3_dari18','T4_dari18','LOTS_dari12','MOTS_dari18','HOTS_dari18','durasi_detik','perlu_diperkuat','catatan','nonce'],
+  Skor:['waktu','kelas','absen','nama','materi','skor','maks','nilai'].concat(RINCI.map(function(k){return k+'_dari'+MAKS_RINCI[k][1];})).concat(['durasi_detik','perlu_diperkuat','catatan','nonce']),
   Jejak:['nonce','waktu','jejak_json']
 };
 var COL_SESI={nonce:0,materi:1,kelas:2,absen:3,nama:4,seed:5,mulai:6,batas:7,status:8,skor:9,maks:10,hasil:11,teks:12,lanjut:13,progres:14,ptime:15};
-var RINCI=['T2','T3','T4','LOTS','MOTS','HOTS'];
 
 function agora(){return Date.now();}
 function gagal(kode,pesan){return {kode:kode,pesan:pesan};}
@@ -1019,7 +1026,7 @@ function aksiKirim(req){
     try{g=m.nilai(pack,jejak);}catch(x){throw gagal('jejak','Jejak jawaban tidak valid.');}
 
     var durasi=Math.round((now-Number(row[COL_SESI.mulai]))/1000),cat=[];
-    if(!g.complete)cat.push('tidak lengkap ('+g.done+' dari '+(CORE.NSOAL*CORE.NLANGKAH)+' langkah)');
+    if(!g.complete)cat.push('tidak lengkap ('+g.done+' dari '+g.total+' langkah)');
     if(durasi<g.done*KONFIG.MIN_DETIK_PER_LANGKAH)cat.push('terlalu-cepat');
     if(g.ignored>0)cat.push(g.ignored+' jawaban diabaikan');
     if(!g.monotonic)cat.push('waktu-jejak-tidak-urut');
