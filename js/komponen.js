@@ -632,7 +632,7 @@ tb.textContent=habis?'💡 Semua petunjuk sudah dibuka'
     var items=[{l:'Soal',d:!intro,c:!!intro}];
     S.Q.st.forEach(function(St,i){var done=S.selesai||(!intro&&(i<S.s||(i===S.s&&S.solved)));items.push({l:St.nm,d:done,c:!intro&&!S.selesai&&i===S.s&&!S.solved});});
     el.prog.innerHTML=items.map(function(it,i){return '<li class="'+(it.d?'done':it.c?'cur':'')+'"><span>'+(it.d?'✓':i+1)+'</span><em>'+esc(it.l)+'</em></li>';}).join('');
-    el.stepText.textContent=intro?'Baca soal, lalu mulai':S.selesai?'Selesai 🎉':'Langkah '+(S.s+1)+' dari 3 · '+S.Q.st[S.s].nm;
+    el.stepText.textContent=intro?'Baca soal, lalu mulai':S.selesai?'Selesai 🎉':'Langkah '+(S.s+1)+' dari '+S.Q.st.length+' · '+S.Q.st[S.s].nm;
   }
   function qView(spec,extra){
     var Q=S.Q;spec=spec||{};
